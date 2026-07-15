@@ -1,0 +1,6 @@
+{
+  "name": "ReelForge",
+  "description": "Premium Dark Luxury Cinematic Video Editing Studio Portfolio",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

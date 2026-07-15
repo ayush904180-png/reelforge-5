@@ -1,0 +1,104 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Poppins:wght@400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-display: 'Poppins', 'Space Grotesk', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+
+  --color-accent: #FF7A00;
+  --color-accent-dark: #FF4D00;
+  --color-accent-light: #FF9A3C;
+  --color-bg-deep: #050505;
+  --color-bg-card: #0E0E0E;
+}
+
+@layer utilities {
+  /* Cinematic Glow Backgrounds */
+  .radial-glow {
+    background: radial-gradient(circle at 50% 50%, rgba(255, 122, 0, 0.15) 0%, rgba(5, 5, 5, 0) 65%);
+  }
+  .radial-glow-hero {
+    background: radial-gradient(circle at 50% 30%, rgba(255, 122, 0, 0.22) 0%, rgba(255, 77, 0, 0.05) 30%, rgba(5, 5, 5, 0) 70%);
+  }
+  
+  /* Text Highlights */
+  .text-glow {
+    text-shadow: 0 0 20px rgba(255, 122, 0, 0.4);
+  }
+  .text-glow-strong {
+    text-shadow: 0 0 35px rgba(255, 122, 0, 0.7);
+  }
+
+  /* Glassmorphism Styles */
+  .glass-navbar {
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+  }
+  
+  .glass-card {
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+  }
+
+  .glass-card-dark {
+    background: rgba(14, 14, 14, 0.7);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .glass-frost-badge {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  .glass-card-hover {
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .glass-card-hover:hover {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(255, 122, 0, 0.3);
+    box-shadow: 0 0 30px rgba(255, 122, 0, 0.15);
+    transform: translateY(-4px);
+  }
+
+  .glow-border {
+    box-shadow: 0 0 20px rgba(255, 122, 0, 0.2);
+  }
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 10px;
+}
+::-webkit-scrollbar-track {
+  background: #050505;
+}
+::-webkit-scrollbar-thumb {
+  background: #1a1a1a;
+  border-radius: 5px;
+  border: 2px solid #050505;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #FF7A00;
+}
+
+html {
+  scroll-behavior: smooth;
+  background-color: #050505;
+  color: #FFFFFF;
+}
+
+/* Custom transitions and overlays */
+.transition-luxury {
+  transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
