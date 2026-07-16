@@ -22,6 +22,7 @@ import {
 } from 'lucide-react';
 import { BlogPost } from '../types';
 import { initialBlogs, getStoredData, saveStoredData } from '../data';
+import { Helmet } from 'react-helmet-async';
 
 interface Comment {
   id: string;
@@ -40,7 +41,7 @@ export default function BlogSystem() {
   const [newComment, setNewComment] = useState({ name: '', text: '' });
   const [copiedLink, setCopiedLink] = useState(false);
 
-  // Load blogs and comments
+  // Load blogs, comments, and handle deep-linked URL routing
   useEffect(() => {
     const storedBlogs = getStoredData<BlogPost[]>('reelforge_blogs', initialBlogs);
     setBlogs(storedBlogs);
@@ -51,7 +52,58 @@ export default function BlogSystem() {
     ];
     const storedComments = getStoredData<Comment[]>('reelforge_blog_comments', initialComments);
     setComments(storedComments);
+
+    // Deep link route detection on initial mount
+    const path = window.location.pathname;
+    if (path.startsWith('/blog/')) {
+      const slug = path.replace('/blog/', '');
+      const found = storedBlogs.find(b => b.slug === slug);
+      if (found) {
+        setSelectedBlog(found);
+        // Scroll smoothly to the blog section
+        setTimeout(() => {
+          const element = document.getElementById('blog');
+          if (element) {
+            element.scrollIntoView({ behavior: 'smooth' });
+          }
+        }, 200);
+      }
+    }
   }, []);
+
+  // Sync state with browser navigation back/forward buttons
+  useEffect(() => {
+    const handlePopState = () => {
+      const path = window.location.pathname;
+      if (path.startsWith('/blog/')) {
+        const slug = path.replace('/blog/', '');
+        const found = blogs.find(b => b.slug === slug);
+        if (found) {
+          setSelectedBlog(found);
+        }
+      } else {
+        setSelectedBlog(null);
+      }
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, [blogs]);
+
+  // Unified route updating handler
+  const selectBlog = (blog: BlogPost | null) => {
+    setSelectedBlog(blog);
+    if (blog) {
+      window.history.pushState(null, '', `/blog/${blog.slug}`);
+      setTimeout(() => {
+        const element = document.getElementById('blog');
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth' });
+        }
+      }, 50);
+    } else {
+      window.history.pushState(null, '', '/blog');
+    }
+  };
 
   const categories = [
     'All',
@@ -103,6 +155,84 @@ export default function BlogSystem() {
 
   return (
     <div className="w-full">
+      {/* Dynamic Blog Specific SEO Metadata & Schema.org JSON-LD */}
+      <Helmet>
+        {selectedBlog ? (
+          <>
+            <title>{`${selectedBlog.title} | ReelForge Strategic Blog`}</title>
+            <meta name="description" content={selectedBlog.summary} />
+            <link rel="canonical" href={`https://reelforge.com/blog/${selectedBlog.slug}`} />
+            
+            {/* Open Graph */}
+            <meta property="og:type" content="article" />
+            <meta property="og:url" content={`https://reelforge.com/blog/${selectedBlog.slug}`} />
+            <meta property="og:title" content={`${selectedBlog.title} | ReelForge`} />
+            <meta property="og:description" content={selectedBlog.summary} />
+            <meta property="og:image" content={selectedBlog.imageUrl} />
+            <meta property="article:published_time" content={selectedBlog.publishedDate} />
+            <meta property="article:author" content={selectedBlog.author.name} />
+            <meta property="article:section" content={selectedBlog.category} />
+
+            {/* Twitter Card */}
+            <meta name="twitter:card" content="summary_large_image" />
+            <meta name="twitter:url" content={`https://reelforge.com/blog/${selectedBlog.slug}`} />
+            <meta name="twitter:title" content={selectedBlog.title} />
+            <meta name="twitter:description" content={selectedBlog.summary} />
+            <meta name="twitter:image" content={selectedBlog.imageUrl} />
+
+            {/* Schema.org BlogPosting Block */}
+            <script type="application/ld+json">
+              {JSON.stringify({
+                "@context": "https://schema.org",
+                "@type": "BlogPosting",
+                "@id": `https://reelforge.com/blog/${selectedBlog.slug}#blogposting`,
+                "headline": selectedBlog.title,
+                "description": selectedBlog.summary,
+                "image": selectedBlog.imageUrl,
+                "datePublished": selectedBlog.publishedDate,
+                "dateModified": selectedBlog.publishedDate,
+                "author": {
+                  "@type": "Person",
+                  "name": selectedBlog.author.name
+                },
+                "publisher": {
+                  "@type": "Organization",
+                  "name": "ReelForge",
+                  "logo": {
+                    "@type": "ImageObject",
+                    "url": "https://reelforge.com/og-image.jpg"
+                  }
+                },
+                "mainEntityOfPage": {
+                  "@type": "WebPage",
+                  "@id": `https://reelforge.com/blog/${selectedBlog.slug}`
+                }
+              })}
+            </script>
+          </>
+        ) : (
+          <>
+            <title>Video Editing Blueprints & Creative Growth Blog | ReelForge</title>
+            <meta name="description" content="Read strategic playbooks and industry case studies on post-production video editing retention, advanced color spaces, and short-form video optimization." />
+            <link rel="canonical" href="https://reelforge.com/blog" />
+            
+            {/* Open Graph */}
+            <meta property="og:type" content="website" />
+            <meta property="og:url" content="https://reelforge.com/blog" />
+            <meta property="og:title" content="Video Editing Blueprints & Creative Growth Blog | ReelForge" />
+            <meta property="og:description" content="Read strategic playbooks and industry case studies on post-production video editing retention, advanced color spaces, and short-form video optimization." />
+            <meta property="og:image" content="https://reelforge.com/og-image.jpg" />
+
+            {/* Twitter Card */}
+            <meta name="twitter:card" content="summary_large_image" />
+            <meta name="twitter:url" content="https://reelforge.com/blog" />
+            <meta name="twitter:title" content="Video Editing Blueprints & Creative Growth Blog | ReelForge" />
+            <meta name="twitter:description" content="Read strategic playbooks and industry case studies on post-production video editing retention, advanced color spaces, and short-form video optimization." />
+            <meta name="twitter:image" content="https://reelforge.com/og-image.jpg" />
+          </>
+        )}
+      </Helmet>
+
       <AnimatePresence mode="wait">
         
         {/* LIST VIEW */}
@@ -159,7 +289,7 @@ export default function BlogSystem() {
                   <motion.article
                     layout
                     key={b.id}
-                    onClick={() => setSelectedBlog(b)}
+                    onClick={() => selectBlog(b)}
                     className="group rounded-2xl overflow-hidden glass-card border border-white/10 bg-gradient-to-b from-[#111] to-black cursor-pointer flex flex-col h-full"
                   >
                     
@@ -222,7 +352,7 @@ export default function BlogSystem() {
           >
             {/* Back to list button */}
             <button
-              onClick={() => setSelectedBlog(null)}
+              onClick={() => selectBlog(null)}
               className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-white/5 bg-white/5 hover:bg-white/10 text-xs text-bebebe hover:text-white transition-colors cursor-pointer"
             >
               <ArrowLeft className="w-4 h-4" /> Back to Blog List

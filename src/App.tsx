@@ -32,6 +32,7 @@ import {
   HelpCircle
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
+import { Helmet } from 'react-helmet-async';
 
 // Sub-components
 import BeforeAfterSlider from './components/BeforeAfterSlider';
@@ -78,11 +79,132 @@ export default function App() {
 
   useEffect(() => {
     refreshDatabase();
+
+    // Smooth scroll handling for SEO-friendly URLs on direct land
+    const path = window.location.pathname;
+    const scrollMap: Record<string, string> = {
+      '/video-editing-services': 'services',
+      '/portfolio': 'portfolio',
+      '/pricing': 'pricing',
+      '/contact': 'contact',
+      '/blog': 'blog',
+    };
+
+    const targetId = scrollMap[path];
+    if (targetId) {
+      setTimeout(() => {
+        const element = document.getElementById(targetId);
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth' });
+        }
+      }, 150);
+    }
   }, []);
 
   return (
     <div className="bg-[#020202] text-white min-h-screen selection:bg-accent selection:text-white font-sans antialiased overflow-x-hidden">
       
+      {/* Dynamic Helmet Metadata for Home/Landing views */}
+      <Helmet>
+        <title>ReelForge | Professional Video Editing Agency for Content Creators & Brands</title>
+        <meta name="description" content="ReelForge is an elite video editing company specializing in high-retention YouTube editing, viral Instagram Reels & TikToks, color grading, sound design, and podcast post-production." />
+        <meta name="keywords" content="Professional Video Editing, Video Editing Agency, YouTube Video Editor, Instagram Reel Editor, Podcast Editing, Short Form Editing, Video Editing Services, Content Creator Editing, Freelance Video Editor, Video Editing Company" />
+        <link rel="canonical" href="https://reelforge.com/" />
+        
+        {/* Open Graph / Facebook / LinkedIn / WhatsApp */}
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://reelforge.com/" />
+        <meta property="og:title" content="ReelForge | Professional Video Editing Agency for Content Creators & Brands" />
+        <meta property="og:description" content="ReelForge scales creators with premium video editing. Get hook-driven YouTube essays, fast-paced Reels, high-fidelity color grading, and custom sound designs." />
+        <meta property="og:image" content="https://reelforge.com/og-image.jpg" />
+
+        {/* Twitter / Discord */}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:url" content="https://reelforge.com/" />
+        <meta name="twitter:title" content="ReelForge | Professional Video Editing Agency" />
+        <meta name="twitter:description" content="Professional video post-production scaling brands and channels. 24-48h turnaround, cinematic LUT grading, sound sciences." />
+        <meta name="twitter:image" content="https://reelforge.com/og-image.jpg" />
+
+        {/* Schema.org JSON-LD structured data block */}
+        <script type="application/ld+json">
+          {JSON.stringify([
+            {
+              "@context": "https://schema.org",
+              "@type": "Organization",
+              "@id": "https://reelforge.com/#organization",
+              "name": "ReelForge",
+              "url": "https://reelforge.com/",
+              "logo": "https://reelforge.com/og-image.jpg",
+              "image": "https://reelforge.com/og-image.jpg",
+              "description": "Premium next-generation post-production video editing agency scaling creative content creators, brands, and agencies.",
+              "address": {
+                "@type": "PostalAddress",
+                "streetAddress": "9440 Santa Monica Blvd, Suite 300",
+                "addressLocality": "Beverly Hills",
+                "addressRegion": "CA",
+                "postalCode": "90210",
+                "addressCountry": "US"
+              },
+              "contactPoint": {
+                "@type": "ContactPoint",
+                "email": "coordinators@reelforge.com",
+                "contactType": "customer service",
+                "availableLanguage": "English"
+              }
+            },
+            {
+              "@context": "https://schema.org",
+              "@type": "ProfessionalService",
+              "@id": "https://reelforge.com/#service",
+              "name": "ReelForge",
+              "image": "https://reelforge.com/og-image.jpg",
+              "priceRange": "$$",
+              "telephone": "+1-310-555-0199",
+              "url": "https://reelforge.com/",
+              "address": {
+                "@type": "PostalAddress",
+                "streetAddress": "9440 Santa Monica Blvd, Suite 300",
+                "addressLocality": "Beverly Hills",
+                "addressRegion": "CA",
+                "postalCode": "90210",
+                "addressCountry": "US"
+              }
+            },
+            {
+              "@context": "https://schema.org",
+              "@type": "WebSite",
+              "@id": "https://reelforge.com/#website",
+              "url": "https://reelforge.com/",
+              "name": "ReelForge",
+              "description": "Professional video editing agency for YouTube, TikTok, Reels, podcasts, and corporate promos.",
+              "publisher": {
+                "@id": "https://reelforge.com/#organization"
+              }
+            },
+            {
+              "@context": "https://schema.org",
+              "@type": "WebPage",
+              "@id": "https://reelforge.com/#webpage",
+              "url": "https://reelforge.com/",
+              "name": "ReelForge - Professional Video Editing Agency",
+              "description": "ReelForge is a premium post-production video editing company. We scale content creators and brands with high-retention YouTube editing, viral Instagram Reels/TikToks, sound design, and color grading."
+            },
+            {
+              "@context": "https://schema.org",
+              "@type": "BreadcrumbList",
+              "itemListElement": [
+                {
+                  "@type": "ListItem",
+                  "position": 1,
+                  "name": "Home",
+                  "item": "https://reelforge.com/"
+                }
+              ]
+            }
+          ])}
+        </script>
+      </Helmet>
+
       {/* Dynamic Lead Magnet Loader (triggers checklist download popup after 20 seconds) */}
       <LeadMagnetPopup />
 
@@ -321,6 +443,7 @@ export default function App() {
         )}
       </AnimatePresence>
 
+      <main id="main-content">
       {/* 3. CAPABILITIES / SERVICES SECTION */}
       <section id="services" className="relative py-24 md:py-32 bg-[#050505] border-t border-white/5">
         <div className="max-w-7xl mx-auto px-6 md:px-12">
@@ -634,6 +757,7 @@ export default function App() {
 
       {/* 14. CONTACT BRIEF FORM */}
       <Contact />
+      </main>
 
       {/* 15. LUXURY FOOTER */}
       <footer className="relative bg-black border-t border-white/5 py-12 md:py-16 text-xs text-muted">

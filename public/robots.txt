@@ -1,0 +1,6 @@
+# Robots.txt for ReelForge - Production Video Editing Agency
+User-agent: *
+Allow: /
+
+# Sitemaps
+Sitemap: https://reelforge.com/sitemap.xml
