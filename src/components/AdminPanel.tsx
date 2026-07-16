@@ -103,13 +103,13 @@ export default function AdminPanel({ isOpen, onClose, onDataRefresh }: AdminPane
 
   const handleVerifyPasscode = (e: React.FormEvent) => {
     e.preventDefault();
-    const correctPasscode = (localStorage.getItem('reelforge_admin_passcode') || 'reelforge').trim();
+    const defaultPasscode = (((import.meta as any).env?.VITE_ADMIN_PASSCODE) || 'reelforge').trim();
+    const correctPasscode = (localStorage.getItem('reelforge_admin_passcode') || defaultPasscode).trim();
     if (passcodeAttempt.trim() === correctPasscode) {
       setIsAuthenticated(true);
       setPasscodeError(false);
     } else {
       setPasscodeError(true);
-      setTimeout(() => setPasscodeError(false), 2000);
     }
   };
 
@@ -441,7 +441,10 @@ export default function AdminPanel({ isOpen, onClose, onDataRefresh }: AdminPane
                         type="password"
                         required
                         value={passcodeAttempt}
-                        onChange={(e) => setPasscodeAttempt(e.target.value)}
+                        onChange={(e) => {
+                          setPasscodeAttempt(e.target.value);
+                          if (passcodeError) setPasscodeError(false);
+                        }}
                         placeholder="••••••••••••"
                         className={`w-full px-4 py-3.5 pl-10 rounded-xl bg-white/5 border text-center text-white text-sm focus:outline-none focus:border-accent tracking-widest ${
                           passcodeError ? 'border-red-500/50 bg-red-500/5' : 'border-white/5 hover:border-white/15'
@@ -451,9 +454,17 @@ export default function AdminPanel({ isOpen, onClose, onDataRefresh }: AdminPane
                     </div>
 
                     {passcodeError && (
-                      <p className="text-[10px] font-mono text-red-400 font-semibold animate-pulse">
-                        ACCESS DENIED: INVALID PASSCODE
-                      </p>
+                      <div className="text-left space-y-1.5 p-3.5 rounded-xl bg-red-500/5 border border-red-500/20 animate-fade-in">
+                        <p className="text-[10px] font-mono text-red-400 font-bold uppercase tracking-wider text-center">
+                          ACCESS DENIED: INVALID PASSCODE
+                        </p>
+                        <p className="text-[11px] text-bebebe leading-relaxed text-center">
+                          If this is a newly uploaded/deployed site, your local passcode wasn't transferred.
+                        </p>
+                        <p className="text-[11px] text-accent font-mono text-center">
+                          Try the default passcode: <span className="underline font-bold select-all bg-white/5 px-1.5 py-0.5 rounded text-white">reelforge</span>
+                        </p>
+                      </div>
                     )}
 
                     <button
