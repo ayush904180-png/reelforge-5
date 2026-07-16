@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Play, 
   Sparkles, 
@@ -21,158 +21,83 @@ import {
   Tv,
   Star,
   Flame,
-  MousePointerClick
+  MousePointerClick,
+  Settings,
+  Calendar,
+  Sparkle,
+  PhoneCall,
+  User,
+  ExternalLink,
+  MessageSquare,
+  HelpCircle
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
+
+// Sub-components
+import BeforeAfterSlider from './components/BeforeAfterSlider';
+import PricingCalculator from './components/PricingCalculator';
+import AiQuoteGenerator from './components/AiQuoteGenerator';
+import LeadMagnetPopup from './components/LeadMagnetPopup';
+import BlogSystem from './components/BlogSystem';
+import BookCall from './components/BookCall';
+import AdminPanel from './components/AdminPanel';
+import PortfolioShowcase from './components/PortfolioShowcase';
+import CaseStudies from './components/CaseStudies';
 import Contact from './components/Contact';
 
-// High-fidelity portfolio items with luxury cinematic placeholders
-interface PortfolioItem {
-  id: string;
-  title: string;
-  creator: string;
-  category: 'youtube' | 'documentary' | 'commercial';
-  duration: string;
-  views?: string;
-  thumbnailUrl: string;
-  tags: string[];
-}
-
-const portfolioData: PortfolioItem[] = [
-  {
-    id: '1',
-    title: 'The Great Alpine Traverse',
-    creator: 'Alex Honnold Fanpage / Alpine Collective',
-    category: 'documentary',
-    duration: '18:45',
-    thumbnailUrl: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80',
-    tags: ['Color Science', 'Sound Design', 'Storytelling']
-  },
-  {
-    id: '2',
-    title: 'Minimalist Workspaces: A Tokyo Tour',
-    creator: 'Design & Space Magazine',
-    category: 'commercial',
-    duration: '02:15',
-    thumbnailUrl: 'https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?auto=format&fit=crop&w=800&q=80',
-    tags: ['Sound FX', 'Seamless Transitions', 'VLOG Editing']
-  },
-  {
-    id: '3',
-    title: 'Retreat Into the Deep Void',
-    creator: 'Midnight Odyssey (6.2M Subs)',
-    category: 'youtube',
-    duration: '12:30',
-    views: '1.4M views',
-    thumbnailUrl: 'https://images.unsplash.com/photo-1419242902214-272b3f66ee7a?auto=format&fit=crop&w=800&q=80',
-    tags: ['Retention Hook', 'Sound Design', 'High-Octane Pacing']
-  },
-  {
-    id: '4',
-    title: 'Revitalizing Heritage: Classic 911 Resto',
-    creator: 'Singer Vehicle Design',
-    category: 'commercial',
-    duration: '01:30',
-    thumbnailUrl: 'https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=800&q=80',
-    tags: ['Automotive Film', 'Custom Sound', 'Premium LUT']
-  },
-  {
-    id: '5',
-    title: 'The Hidden Artisans of Kyoto',
-    creator: 'Worldly Documentaries',
-    category: 'documentary',
-    duration: '22:10',
-    thumbnailUrl: 'https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?auto=format&fit=crop&w=800&q=80',
-    tags: ['Cultural Piece', 'Multi-Cam Alignment', 'Warm Grading']
-  },
-  {
-    id: '6',
-    title: 'How AI Rewrote Code In 24 Hours',
-    creator: 'DevForge AI (1.1M Subs)',
-    category: 'youtube',
-    duration: '14:05',
-    views: '840K views',
-    thumbnailUrl: 'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?auto=format&fit=crop&w=800&q=80',
-    tags: ['Graphic Overlays', 'Retention Mapping', 'Sound FX']
-  }
-];
-
-// Interactive FAQ Component
-function FAQSection() {
-  const [openIndex, setOpenIndex] = useState<number | null>(null);
-
-  const faqs = [
-    {
-      q: "What is your turnaround time for a draft?",
-      a: "Our standard turnaround is 48-72 hours depending on the package. Commercial campaigns and extensive documentaries can be scheduled on custom production timelines."
-    },
-    {
-      q: "How do we collaborate on revisions?",
-      a: "We use Frame.io, allowing you to leave frame-by-frame comments directly on the video. This creates a transparent and ultra-fast revision feedback loop."
-    },
-    {
-      q: "What camera files do you accept?",
-      a: "We accept all professional formats including RED RAW, ARRI ProRes, Blackmagic RAW, S-Log3, D-Log, and standard 10-bit H.264/H.265 footage."
-    },
-    {
-      q: "Do you supply licensed soundtrack music?",
-      a: "Yes! Every project includes custom licensing for premium royalty-free music from platforms like Musicbed, Artlist, and Epidemic Sound, safe for YouTube, TV, and socials."
-    }
-  ];
-
-  return (
-    <div className="max-w-3xl mx-auto space-y-4">
-      {faqs.map((faq, index) => {
-        const isOpen = openIndex === index;
-        return (
-          <div 
-            key={index}
-            className="rounded-2xl glass-card border border-white/5 overflow-hidden transition-all duration-300"
-          >
-            <button
-              onClick={() => setOpenIndex(isOpen ? null : index)}
-              className="w-full p-6 text-left flex items-center justify-between gap-4 text-white hover:text-accent transition-colors"
-            >
-              <span className="font-display font-bold text-sm sm:text-base">{faq.q}</span>
-              <ChevronDown className={`w-5 h-5 shrink-0 text-accent transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} />
-            </button>
-            <AnimatePresence>
-              {isOpen && (
-                <motion.div
-                  initial={{ height: 0, opacity: 0 }}
-                  animate={{ height: 'auto', opacity: 1 }}
-                  exit={{ height: 0, opacity: 0 }}
-                  transition={{ duration: 0.25 }}
-                >
-                  <div className="px-6 pb-6 pt-1 border-t border-white/5 text-xs sm:text-sm text-bebebe font-sans leading-relaxed">
-                    {faq.a}
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
-        );
-      })}
-    </div>
-  );
-}
+// Database core
+import { Service, FAQItem, Testimonial, PricingPlan } from './types';
+import { 
+  initialServices, 
+  initialFAQs, 
+  initialTestimonials, 
+  initialPricingPlans,
+  getStoredData 
+} from './data';
 
 export default function App() {
-  const [activeCategory, setActiveCategory] = useState<'all' | 'youtube' | 'documentary' | 'commercial'>('all');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [adminOpen, setAdminOpen] = useState(false);
+  
+  // Data State managed and refreshed dynamically when Admin overrides local changes
+  const [services, setServices] = useState<Service[]>([]);
+  const [faqs, setFaqs] = useState<FAQItem[]>([]);
+  const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
+  const [pricingPlans, setPricingPlans] = useState<PricingPlan[]>([]);
+  
+  const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(null);
+  const [selectedVideoReel, setSelectedVideoReel] = useState<boolean>(false);
 
-  const filteredPortfolio = activeCategory === 'all' 
-    ? portfolioData 
-    : portfolioData.filter(item => item.category === activeCategory);
+  // Sync data function
+  const refreshDatabase = () => {
+    setServices(getStoredData<Service[]>('reelforge_services', initialServices));
+    setFaqs(getStoredData<FAQItem[]>('reelforge_faqs', initialFAQs));
+    setTestimonials(getStoredData<Testimonial[]>('reelforge_testimonials', initialTestimonials));
+    setPricingPlans(getStoredData<PricingPlan[]>('reelforge_pricing', initialPricingPlans));
+  };
+
+  useEffect(() => {
+    refreshDatabase();
+  }, []);
 
   return (
     <div className="bg-[#020202] text-white min-h-screen selection:bg-accent selection:text-white font-sans antialiased overflow-x-hidden">
       
-      {/* 1. Floating Premium Navbar */}
+      {/* Dynamic Lead Magnet Loader (triggers checklist download popup after 20 seconds) */}
+      <LeadMagnetPopup />
+
+      {/* Database Admin Console Modal Overlay */}
+      <AdminPanel 
+        isOpen={adminOpen} 
+        onClose={() => setAdminOpen(false)} 
+        onDataRefresh={refreshDatabase}
+      />
+
+      {/* 1. FLOATING NAVIGATION BAR */}
       <nav className="fixed top-0 left-0 right-0 z-50 transition-all duration-300 bg-[#020202]/70 backdrop-blur-md border-b border-white/5">
         <div className="max-w-7xl mx-auto px-6 md:px-12 h-20 flex items-center justify-between">
           
-          {/* Logo */}
+          {/* Brand Logo */}
           <a href="#hero" className="flex items-center gap-3 group">
             <div className="relative w-9 h-9 rounded-xl bg-gradient-to-tr from-accent to-[#FF4D00] flex items-center justify-center shadow-[0_0_15px_rgba(255,122,0,0.4)] group-hover:scale-105 transition-transform">
               <Film className="w-5 h-5 text-white" />
@@ -182,105 +107,142 @@ export default function App() {
             </span>
           </a>
 
-          {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center gap-8 text-sm font-medium">
-            <a href="#services" className="text-bebebe hover:text-white hover:text-glow-subtle transition-all">Services</a>
-            <a href="#portfolio" className="text-bebebe hover:text-white hover:text-glow-subtle transition-all">Portfolio</a>
-            <a href="#process" className="text-bebebe hover:text-white hover:text-glow-subtle transition-all">Process</a>
-            <a href="#pricing" className="text-bebebe hover:text-white hover:text-glow-subtle transition-all">Pricing</a>
-            <a href="#faq" className="text-bebebe hover:text-white hover:text-glow-subtle transition-all">FAQ</a>
-            <a 
-              href="#contact" 
-              className="px-5 py-2.5 rounded-xl bg-accent hover:bg-accent-dark text-white font-display font-bold text-xs shadow-[0_4px_15px_rgba(255,122,0,0.25)] hover:shadow-[0_0_20px_rgba(255,122,0,0.45)] transition-all duration-300 hover:-translate-y-0.5"
+          {/* Desktop Links */}
+          <div className="hidden lg:flex items-center gap-8 text-xs font-display uppercase tracking-wider font-bold">
+            <a href="#services" className="text-bebebe hover:text-white transition-all">Services</a>
+            <a href="#sliders" className="text-bebebe hover:text-white transition-all">Editing Sliders</a>
+            <a href="#portfolio" className="text-bebebe hover:text-white transition-all">Portfolio</a>
+            <a href="#case-studies" className="text-bebebe hover:text-white transition-all">Case Studies</a>
+            <a href="#pricing" className="text-bebebe hover:text-white transition-all">Pricing Plans</a>
+            <a href="#gpt-blueprint" className="text-bebebe hover:text-white transition-all text-accent">ReelGPT AI</a>
+            <a href="#blog" className="text-bebebe hover:text-white transition-all">SEO Blog</a>
+            <a href="#faq" className="text-bebebe hover:text-white transition-all">FAQ</a>
+          </div>
+
+          {/* Call to Action CTA block */}
+          <div className="hidden lg:flex items-center gap-4">
+            <button 
+              onClick={() => setAdminOpen(true)}
+              className="px-3.5 py-2.5 rounded-xl border border-white/10 hover:border-accent/40 bg-white/2 text-bebebe hover:text-white transition-all text-xs font-display uppercase font-bold tracking-wider flex items-center gap-1.5 cursor-pointer"
+              title="Admin Database Console"
             >
-              Start Project
+              <Settings className="w-4 h-4 animate-spin text-accent" /> Custom DB
+            </button>
+            <a 
+              href="#book-call" 
+              className="px-5 py-2.5 rounded-xl bg-accent hover:bg-accent-dark text-white font-display font-black text-xs shadow-[0_4px_15px_rgba(255,122,0,0.25)] hover:shadow-[0_0_20px_rgba(255,122,0,0.45)] transition-all duration-300 hover:-translate-y-0.5"
+            >
+              Book Consult
             </a>
           </div>
 
-          {/* Mobile Menu Trigger */}
-          <button 
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)} 
-            className="md:hidden w-10 h-10 flex flex-col items-center justify-center gap-1.5 focus:outline-none"
-            aria-label="Toggle Menu"
-          >
-            <span className={`w-6 h-0.5 bg-white transition-all duration-300 ${mobileMenuOpen ? 'rotate-45 translate-y-2' : ''}`} />
-            <span className={`w-6 h-0.5 bg-white transition-all duration-300 ${mobileMenuOpen ? 'opacity-0' : ''}`} />
-            <span className={`w-6 h-0.5 bg-white transition-all duration-300 ${mobileMenuOpen ? '-rotate-45 -translate-y-2' : ''}`} />
-          </button>
+          {/* Mobile navigation toggle */}
+          <div className="flex items-center gap-2 lg:hidden">
+            <button 
+              onClick={() => setAdminOpen(true)}
+              className="px-2.5 py-1.5 rounded-lg border border-white/10 bg-white/5 text-xs text-accent"
+            >
+              🛠️ DB
+            </button>
+            <button 
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)} 
+              className="w-10 h-10 flex flex-col items-center justify-center gap-1.5 focus:outline-none"
+              aria-label="Toggle Menu"
+            >
+              <span className={`w-6 h-0.5 bg-white transition-all duration-300 ${mobileMenuOpen ? 'rotate-45 translate-y-2' : ''}`} />
+              <span className={`w-6 h-0.5 bg-white transition-all duration-300 ${mobileMenuOpen ? 'opacity-0' : ''}`} />
+              <span className={`w-6 h-0.5 bg-white transition-all duration-300 ${mobileMenuOpen ? '-rotate-45 -translate-y-2' : ''}`} />
+            </button>
+          </div>
+
         </div>
 
-        {/* Mobile Navigation Dropdown */}
+        {/* Mobile slide-out nav drawer */}
         <AnimatePresence>
           {mobileMenuOpen && (
             <motion.div 
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: 'auto' }}
               exit={{ opacity: 0, height: 0 }}
-              className="md:hidden border-t border-white/5 bg-[#050505]/95 backdrop-blur-xl px-6 py-8 space-y-6"
+              className="lg:hidden border-t border-white/5 bg-[#050505]/95 backdrop-blur-xl px-6 py-8 space-y-6"
             >
-              <div className="flex flex-col gap-5 text-base font-semibold">
+              <div className="flex flex-col gap-5 text-sm font-display font-bold uppercase tracking-wider">
                 <a onClick={() => setMobileMenuOpen(false)} href="#services" className="text-bebebe hover:text-white">Services</a>
+                <a onClick={() => setMobileMenuOpen(false)} href="#sliders" className="text-bebebe hover:text-white">Editing Sliders</a>
                 <a onClick={() => setMobileMenuOpen(false)} href="#portfolio" className="text-bebebe hover:text-white">Portfolio</a>
-                <a onClick={() => setMobileMenuOpen(false)} href="#process" className="text-bebebe hover:text-white">Process</a>
-                <a onClick={() => setMobileMenuOpen(false)} href="#pricing" className="text-bebebe hover:text-white">Pricing</a>
+                <a onClick={() => setMobileMenuOpen(false)} href="#case-studies" className="text-bebebe hover:text-white">Case Studies</a>
+                <a onClick={() => setMobileMenuOpen(false)} href="#pricing" className="text-bebebe hover:text-white">Pricing Plans</a>
+                <a onClick={() => setMobileMenuOpen(false)} href="#blog" className="text-bebebe hover:text-white">SEO Blog</a>
                 <a onClick={() => setMobileMenuOpen(false)} href="#faq" className="text-bebebe hover:text-white">FAQ</a>
               </div>
-              <a 
-                onClick={() => setMobileMenuOpen(false)} 
-                href="#contact" 
-                className="block text-center w-full py-3.5 bg-accent text-white font-display font-bold text-sm rounded-xl shadow-lg"
-              >
-                Start Free Trial / Project
-              </a>
+              <div className="flex flex-col gap-3">
+                <button 
+                  onClick={() => {
+                    setMobileMenuOpen(false);
+                    setAdminOpen(true);
+                  }}
+                  className="w-full py-3 bg-white/5 text-white font-display font-bold text-xs rounded-xl flex items-center justify-center gap-1.5"
+                >
+                  🛠️ Launch Forge DB Admin
+                </button>
+                <a 
+                  onClick={() => setMobileMenuOpen(false)} 
+                  href="#book-call" 
+                  className="block text-center w-full py-3.5 bg-accent text-white font-display font-bold text-xs rounded-xl shadow-lg"
+                >
+                  Schedule Consult
+                </a>
+              </div>
             </motion.div>
           )}
         </AnimatePresence>
       </nav>
 
-      {/* 2. Hero Section */}
-      <header id="hero" className="relative pt-32 pb-24 md:pt-48 md:pb-36 bg-[#020202] overflow-hidden flex items-center justify-center min-h-[90vh]">
-        {/* Decorative lighting background blobs */}
+      {/* 2. CINEMATIC HERO SECTION */}
+      <header id="hero" className="relative pt-32 pb-24 md:pt-48 md:pb-36 bg-[#020202] overflow-hidden flex items-center justify-center min-h-[95vh]">
+        
+        {/* Animated grid layers and orange/red glow backdrops */}
         <div className="absolute top-[20%] left-[20%] w-[500px] h-[500px] bg-accent/10 rounded-full blur-[120px] pointer-events-none" />
         <div className="absolute bottom-[10%] right-[10%] w-[600px] h-[600px] bg-purple-500/5 rounded-full blur-[140px] pointer-events-none" />
         <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff01_1px,transparent_1px),linear-gradient(to_bottom,#ffffff01_1px,transparent_1px)] bg-[size:4rem_4rem] pointer-events-none z-0" />
 
         <div className="max-w-7xl mx-auto px-6 md:px-12 relative z-10 text-center">
           
-          {/* Accent badge */}
+          {/* Luxury creative category badge */}
           <motion.div 
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full glass-frost-badge text-accent font-mono text-xs font-semibold uppercase tracking-wider mb-8"
+            className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full glass-frost-badge text-accent font-mono text-[10px] font-bold uppercase tracking-widest mb-8"
           >
             <Sparkles className="w-3.5 h-3.5 animate-pulse" />
-            Next-Gen Post-Production Studio
+            CRAFTING HIGH-CONVERSION DIGITAL MASS MEDIA
           </motion.div>
 
-          {/* Heading */}
+          {/* Main Headline */}
           <motion.h1 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.1 }}
-            className="font-display font-black text-4xl sm:text-6xl md:text-[80px] tracking-tight leading-[1.05] max-w-5xl mx-auto"
+            className="font-display font-black text-4xl sm:text-6xl md:text-[76px] tracking-tight leading-[1.05] max-w-5xl mx-auto text-white"
           >
-            We Turn Raw Footage Into <br />
+            Professional Video Editing <br className="hidden sm:inline" />
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-accent via-[#FF4D00] to-[#FF9A3C] text-glow-strong">
-              Cinematic Masterworks
+              That Makes Content Go Viral.
             </span>
           </motion.h1>
 
-          {/* Subtitle */}
+          {/* Subheading */}
           <motion.p 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
-            className="font-sans text-bebebe text-base sm:text-lg md:text-xl leading-[1.7] max-w-2xl mx-auto mt-8"
+            className="font-sans text-bebebe text-base sm:text-lg md:text-xl leading-[1.7] max-w-3xl mx-auto mt-8"
           >
-            High-octane video editing, flawless color grading, and immersive sound architecture designed for elite creators, corporate innovators, and film directors.
+            We help creators, brands, and businesses grow with premium short-form and long-form video editing. Align visual pacing, LUT grading, and sound sciences to dominate algorithmic retention.
           </motion.p>
 
-          {/* Actions */}
+          {/* Dynamic primary CTAs */}
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -288,22 +250,22 @@ export default function App() {
             className="flex flex-col sm:flex-row gap-4 justify-center items-center mt-10"
           >
             <a 
-              href="#contact" 
-              className="w-full sm:w-auto px-8 py-4 rounded-xl bg-accent hover:bg-accent-dark text-white font-display font-black text-sm shadow-[0_5px_25px_rgba(255,122,0,0.35)] hover:shadow-[0_0_30px_rgba(255,122,0,0.6)] transition-all duration-300 hover:-translate-y-0.5 flex items-center justify-center gap-2"
+              href="#book-call" 
+              className="w-full sm:w-auto px-8 py-4 rounded-xl bg-gradient-to-tr from-accent to-[#FF4D00] hover:scale-[1.01] text-white font-display font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-[0_5px_25px_rgba(255,122,0,0.35)] hover:shadow-[0_0_30px_rgba(255,122,0,0.6)] transition-all duration-300"
             >
-              <Flame className="w-4 h-4 text-white" />
-              Claim Creative Blueprint
+              <Calendar className="w-4 h-4 text-white" />
+              Book Free Consultation
             </a>
-            <a 
-              href="#portfolio" 
-              className="w-full sm:w-auto px-8 py-4 rounded-xl glass-frost-badge hover:border-accent/40 text-white font-display font-bold text-sm hover:text-accent hover:-translate-y-0.5 transition-all duration-300 flex items-center justify-center gap-2"
+            <button 
+              onClick={() => setSelectedVideoReel(true)}
+              className="w-full sm:w-auto px-8 py-4 rounded-xl glass-frost-badge hover:border-accent/40 text-white font-display font-bold text-xs uppercase tracking-wider hover:-translate-y-0.5 transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer"
             >
               <Play className="w-4 h-4 text-accent fill-accent" />
-              Watch Reel (2:15)
-            </a>
+              Watch Cinematic Reel (1:45)
+            </button>
           </motion.div>
 
-          {/* Core Metrics Grid */}
+          {/* Statistical High-Impact Grid */}
           <motion.div 
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -311,614 +273,424 @@ export default function App() {
             className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-4 max-w-4xl mx-auto mt-20 p-8 rounded-2xl glass-card border border-white/5"
           >
             <div>
-              <div className="font-display font-black text-2xl sm:text-3xl text-accent">150M+</div>
-              <div className="font-sans text-xs text-bebebe uppercase tracking-wider mt-1.5">Aggregate Views Generated</div>
+              <div className="font-display font-black text-3xl sm:text-4xl text-accent">240M+</div>
+              <div className="font-sans text-[10px] text-muted uppercase tracking-wider mt-1.5 font-bold">Total Client Impressions</div>
             </div>
             <div>
-              <div className="font-display font-black text-2xl sm:text-3xl text-accent">48 Hrs</div>
-              <div className="font-sans text-xs text-bebebe uppercase tracking-wider mt-1.5">Average Draft Speed</div>
+              <div className="font-display font-black text-3xl sm:text-4xl text-accent">24-48h</div>
+              <div className="font-sans text-[10px] text-muted uppercase tracking-wider mt-1.5 font-bold">Standard Turnaround</div>
             </div>
             <div>
-              <div className="font-display font-black text-2xl sm:text-3xl text-accent">100%</div>
-              <div className="font-sans text-xs text-bebebe uppercase tracking-wider mt-1.5">Satisfaction Rating</div>
+              <div className="font-display font-black text-3xl sm:text-4xl text-accent">100%</div>
+              <div className="font-sans text-[10px] text-muted uppercase tracking-wider mt-1.5 font-bold">Algorithmic Satisfaction</div>
             </div>
             <div>
-              <div className="font-display font-black text-2xl sm:text-3xl text-accent">9+ Years</div>
-              <div className="font-sans text-xs text-bebebe uppercase tracking-wider mt-1.5">Industry Experience</div>
+              <div className="font-display font-black text-3xl sm:text-4xl text-accent">500+</div>
+              <div className="font-sans text-[10px] text-muted uppercase tracking-wider mt-1.5 font-bold">Campaigns Executed</div>
             </div>
           </motion.div>
 
         </div>
       </header>
 
-      {/* 3. Services Section */}
-      <section id="services" className="relative py-28 md:py-36 bg-[#050505] border-t border-white/5">
+      {/* Cinematic trailer lightbox */}
+      <AnimatePresence>
+        {selectedVideoReel && (
+          <div className="fixed inset-0 bg-black/95 z-[9000] flex items-center justify-center p-4 backdrop-blur-md">
+            <motion.div 
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="w-full max-w-4xl aspect-video bg-[#0c0c0c] border border-white/10 rounded-2xl overflow-hidden relative"
+            >
+              <button 
+                onClick={() => setSelectedVideoReel(false)}
+                className="absolute top-4 right-4 bg-black/80 px-3 py-1.5 border border-white/5 text-[10px] uppercase font-mono font-bold text-white rounded-lg cursor-pointer"
+              >
+                Close Reel
+              </button>
+              <iframe 
+                src="https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1" 
+                title="ReelForge Cinema Showreel" 
+                className="w-full h-full border-0" 
+                allow="autoplay; encrypted-media" 
+                allowFullScreen
+              />
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* 3. CAPABILITIES / SERVICES SECTION */}
+      <section id="services" className="relative py-24 md:py-32 bg-[#050505] border-t border-white/5">
         <div className="max-w-7xl mx-auto px-6 md:px-12">
           
-          <div className="text-center max-w-2xl mx-auto mb-20">
-            <span className="text-accent font-mono text-xs uppercase tracking-widest block mb-3">// Capabilities</span>
+          <div className="text-center max-w-2xl mx-auto mb-16">
+            <span className="text-accent font-mono text-xs uppercase tracking-widest block mb-3">// Scientific Post Production</span>
             <h2 className="font-display font-black text-3xl sm:text-4xl lg:text-5xl tracking-tight leading-[1.1] text-white">
               Surgical Precision Across Every Frame
             </h2>
             <p className="font-sans text-bebebe text-sm sm:text-base leading-relaxed mt-4">
-              We treat video editing as an engineering process combined with fine art. Every cut, transition, and color grade serves to keep viewers locked.
+              We analyze retention sciences, sound rumbles, and primary LUT color curves to build masterpieces that retain viewers through algorithmic waves.
             </p>
           </div>
 
-          {/* Bento-grid Capabilities */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
-            
-            {/* Service 1 */}
-            <div className="p-8 rounded-2xl glass-card hover:border-accent/20 transition-all duration-300 group flex flex-col justify-between">
-              <div>
-                <div className="w-12 h-12 rounded-xl bg-accent/15 border border-accent/20 text-accent flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                  <Film className="w-6 h-6" />
+            {services.map((s, idx) => (
+              <div 
+                key={s.id || idx}
+                className="p-8 rounded-2xl glass-card hover:border-accent/20 transition-all duration-300 group flex flex-col justify-between"
+              >
+                <div>
+                  <div className="w-12 h-12 rounded-xl bg-accent/15 border border-accent/20 text-accent flex items-center justify-center mb-6 group-hover:scale-105 transition-transform">
+                    {idx % 3 === 0 ? <Film className="w-6 h-6" /> : idx % 3 === 1 ? <Sliders className="w-6 h-6" /> : <Volume2 className="w-6 h-6" />}
+                  </div>
+                  <span className="text-[9px] font-mono text-accent uppercase tracking-wider block mb-1">{s.category}</span>
+                  <h3 className="font-display font-bold text-lg sm:text-xl text-white mb-3">{s.title}</h3>
+                  <p className="font-sans text-bebebe text-xs sm:text-sm leading-relaxed mb-4">
+                    {s.description}
+                  </p>
+                  <span className="inline-block bg-white/5 border border-white/5 px-2.5 py-1 rounded text-[10px] font-mono text-muted">
+                    Target speed: {s.deliveryTime}
+                  </span>
                 </div>
-                <h3 className="font-display font-bold text-lg sm:text-xl text-white mb-3">Long-form Narrative Structuring</h3>
-                <p className="font-sans text-bebebe text-xs sm:text-sm leading-relaxed">
-                  We shape documentaries, high-end YouTube video essays, and corporate timelines with exceptional storytelling pacing that captures human emotion.
-                </p>
-              </div>
-              <div className="mt-8 flex items-center gap-2 text-xs font-mono font-bold text-accent group-hover:gap-3 transition-all">
-                Learn more <ArrowRight className="w-4 h-4" />
-              </div>
-            </div>
-
-            {/* Service 2 */}
-            <div className="p-8 rounded-2xl glass-card hover:border-accent/20 transition-all duration-300 group flex flex-col justify-between">
-              <div>
-                <div className="w-12 h-12 rounded-xl bg-accent/15 border border-accent/20 text-accent flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                  <Sliders className="w-6 h-6" />
+                <div className="mt-8 flex items-center justify-between border-t border-white/5 pt-4">
+                  <span className="text-[10px] font-mono text-muted">STARTING RATE</span>
+                  <span className="text-white font-display font-black text-sm">${s.startingPrice}</span>
                 </div>
-                <h3 className="font-display font-bold text-lg sm:text-xl text-white mb-3">Hollywood-Grade Color Science</h3>
-                <p className="font-sans text-bebebe text-xs sm:text-sm leading-relaxed">
-                  Advanced primary/secondary balancing, color matching across cameras, and custom cinematic LUT curves tailored to make your visuals pop.
-                </p>
               </div>
-              <div className="mt-8 flex items-center gap-2 text-xs font-mono font-bold text-accent group-hover:gap-3 transition-all">
-                Learn more <ArrowRight className="w-4 h-4" />
-              </div>
-            </div>
-
-            {/* Service 3 */}
-            <div className="p-8 rounded-2xl glass-card hover:border-accent/20 transition-all duration-300 group flex flex-col justify-between">
-              <div>
-                <div className="w-12 h-12 rounded-xl bg-accent/15 border border-accent/20 text-accent flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                  <Volume2 className="w-6 h-6" />
-                </div>
-                <h3 className="font-display font-bold text-lg sm:text-xl text-white mb-3">Immersive Sound Landscapes</h3>
-                <p className="font-sans text-bebebe text-xs sm:text-sm leading-relaxed">
-                  Multichannel foley integration, vocal mastering, audio ducking, sound effects styling, and custom soundtrack licensing that drives emotional impact.
-                </p>
-              </div>
-              <div className="mt-8 flex items-center gap-2 text-xs font-mono font-bold text-accent group-hover:gap-3 transition-all">
-                Learn more <ArrowRight className="w-4 h-4" />
-              </div>
-            </div>
-
-            {/* Service 4 */}
-            <div className="p-8 rounded-2xl glass-card hover:border-accent/20 transition-all duration-300 group flex flex-col justify-between">
-              <div>
-                <div className="w-12 h-12 rounded-xl bg-accent/15 border border-accent/20 text-accent flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                  <Layers className="w-6 h-6" />
-                </div>
-                <h3 className="font-display font-bold text-lg sm:text-xl text-white mb-3">Retention Auditing & Hooks</h3>
-                <p className="font-sans text-bebebe text-xs sm:text-sm leading-relaxed">
-                  We design high-retention visual hooks for the first 10 seconds of social videos, leveraging pacing tricks, graphics, and custom title cards.
-                </p>
-              </div>
-              <div className="mt-8 flex items-center gap-2 text-xs font-mono font-bold text-accent group-hover:gap-3 transition-all">
-                Learn more <ArrowRight className="w-4 h-4" />
-              </div>
-            </div>
-
-            {/* Service 5 */}
-            <div className="p-8 rounded-2xl glass-card hover:border-accent/20 transition-all duration-300 group flex flex-col justify-between">
-              <div>
-                <div className="w-12 h-12 rounded-xl bg-accent/15 border border-accent/20 text-accent flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                  <Tv className="w-6 h-6" />
-                </div>
-                <h3 className="font-display font-bold text-lg sm:text-xl text-white mb-3">Sleek Short-form Pacing</h3>
-                <p className="font-sans text-bebebe text-xs sm:text-sm leading-relaxed">
-                  Optimized for TikTok, Instagram Reels, and YouTube Shorts. Punchy zoom-ins, typography animations, and engaging sound design.
-                </p>
-              </div>
-              <div className="mt-8 flex items-center gap-2 text-xs font-mono font-bold text-accent group-hover:gap-3 transition-all">
-                Learn more <ArrowRight className="w-4 h-4" />
-              </div>
-            </div>
-
-            {/* Service 6 */}
-            <div className="p-8 rounded-2xl glass-card hover:border-accent/20 transition-all duration-300 group flex flex-col justify-between">
-              <div>
-                <div className="w-12 h-12 rounded-xl bg-accent/15 border border-accent/20 text-accent flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                  <Sparkles className="w-6 h-6" />
-                </div>
-                <h3 className="font-display font-bold text-lg sm:text-xl text-white mb-3">VFX & 3D Integration</h3>
-                <p className="font-sans text-bebebe text-xs sm:text-sm leading-relaxed">
-                  Incorporate dynamic text callouts, tracked 3D elements, clean screen replacements, rotoscoping, and subtle motion design flourishes.
-                </p>
-              </div>
-              <div className="mt-8 flex items-center gap-2 text-xs font-mono font-bold text-accent group-hover:gap-3 transition-all">
-                Learn more <ArrowRight className="w-4 h-4" />
-              </div>
-            </div>
-
+            ))}
           </div>
 
         </div>
       </section>
 
-      {/* 4. Portfolio Section */}
-      <section id="portfolio" className="relative py-28 md:py-36 bg-[#020202]">
+      {/* 4. BEFORE / AFTER EDITING SLIDERS */}
+      <section id="sliders" className="relative py-24 md:py-32 bg-[#020202] border-t border-white/5">
         <div className="max-w-7xl mx-auto px-6 md:px-12">
           
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-16">
-            <div>
-              <span className="text-accent font-mono text-xs uppercase tracking-widest block mb-3">// Selected Cuts</span>
-              <h2 className="font-display font-black text-3xl sm:text-4xl lg:text-5xl tracking-tight leading-[1.1] text-white">
-                Our Editing Showcases
-              </h2>
-            </div>
-
-            {/* Filter buttons */}
-            <div className="flex flex-wrap gap-2.5">
-              {(['all', 'youtube', 'documentary', 'commercial'] as const).map((category) => (
-                <button
-                  key={category}
-                  onClick={() => setActiveCategory(category)}
-                  className={`px-4 py-2 rounded-xl font-display font-bold text-xs uppercase tracking-wide transition-all border cursor-pointer ${
-                    activeCategory === category 
-                      ? 'bg-accent border-accent text-white shadow-lg' 
-                      : 'glass-frost-badge border-white/5 hover:border-accent/40 text-bebebe hover:text-white'
-                  }`}
-                >
-                  {category}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Grid Layout */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            <AnimatePresence mode="popLayout">
-              {filteredPortfolio.map((item) => (
-                <motion.div
-                  layout
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.9 }}
-                  transition={{ duration: 0.3 }}
-                  key={item.id}
-                  className="rounded-2xl glass-card overflow-hidden group hover:border-accent/20 transition-all duration-300 flex flex-col h-full"
-                >
-                  {/* Thumbnail Cover */}
-                  <div className="relative aspect-video overflow-hidden bg-black flex items-center justify-center">
-                    <img 
-                      src={item.thumbnailUrl} 
-                      alt={item.title} 
-                      className="w-full h-full object-cover opacity-80 group-hover:scale-105 transition-transform duration-500"
-                      referrerPolicy="no-referrer"
-                    />
-                    
-                    {/* Dark gradient overlap */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
-
-                    {/* Left top category badge */}
-                    <span className="absolute top-4 left-4 text-[10px] font-mono font-bold bg-black/60 border border-white/10 text-accent px-2.5 py-1 rounded-full uppercase tracking-wider">
-                      {item.category}
-                    </span>
-
-                    {/* Right bottom duration badge */}
-                    <span className="absolute bottom-4 right-4 text-[10px] font-mono bg-black/80 px-2 py-0.5 rounded text-white flex items-center gap-1.5 font-medium">
-                      <Clock className="w-3 h-3 text-accent" />
-                      {item.duration}
-                    </span>
-
-                    {/* Play Hover Overlay */}
-                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 bg-black/35 transition-all duration-300">
-                      <div className="w-12 h-12 rounded-full bg-accent text-white flex items-center justify-center shadow-lg transform translate-y-3 group-hover:translate-y-0 transition-all duration-300">
-                        <Play className="w-5 h-5 fill-white ml-0.5" />
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Body Details */}
-                  <div className="p-6 flex-grow flex flex-col justify-between">
-                    <div>
-                      <div className="text-xs font-mono text-accent/80 font-semibold uppercase tracking-wider mb-2">
-                        {item.creator}
-                      </div>
-                      <h3 className="font-display font-bold text-base sm:text-lg text-white mb-4 line-clamp-1 group-hover:text-accent transition-colors">
-                        {item.title}
-                      </h3>
-                    </div>
-
-                    <div>
-                      {/* Tags list */}
-                      <div className="flex flex-wrap gap-1.5">
-                        {item.tags.map((tag) => (
-                          <span key={tag} className="text-[10px] font-sans bg-white/5 text-bebebe px-2 py-0.5 rounded">
-                            {tag}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                </motion.div>
-              ))}
-            </AnimatePresence>
-          </div>
-
-        </div>
-      </section>
-
-      {/* 5. Production Flow (Process) */}
-      <section id="process" className="relative py-28 md:py-36 bg-[#050505] border-t border-white/5">
-        <div className="max-w-7xl mx-auto px-6 md:px-12">
-          
-          <div className="text-center max-w-2xl mx-auto mb-20">
-            <span className="text-accent font-mono text-xs uppercase tracking-widest block mb-3">// Seamless Delivery</span>
+          <div className="text-center max-w-2xl mx-auto mb-16">
+            <span className="text-accent font-mono text-xs uppercase tracking-widest block mb-3">// Drag to Reveal Visual Power</span>
             <h2 className="font-display font-black text-3xl sm:text-4xl lg:text-5xl tracking-tight leading-[1.1] text-white">
-              Your Onboarding Blueprint
+              Raw Footage vs. ReelForge Master
             </h2>
             <p className="font-sans text-bebebe text-sm sm:text-base leading-relaxed mt-4">
-              We eliminate friction from creative production. Direct file pipelines and crystal-clear communication mean drafts are always on target.
+              Inspect our high-fidelity color grading, graphic overlay rendering, and raw-clip sequence alignment directly. Click on the project tabs below to switch timelines.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
-            
-            {/* Step 1 */}
-            <div className="p-8 rounded-2xl glass-card border border-white/5 relative">
-              <div className="absolute top-6 right-6 font-display font-black text-4xl text-accent/15">01</div>
-              <div className="text-accent font-mono font-bold text-xs uppercase tracking-wider mb-6">Pipeline Start</div>
-              <h3 className="font-display font-bold text-base sm:text-lg text-white mb-3">Upload Footage</h3>
-              <p className="font-sans text-bebebe text-xs sm:text-sm leading-relaxed">
-                Drop your raw clips, voice tracks, brand style guidelines, and scripts into our secure high-speed Google Drive or Dropbox shared folder.
-              </p>
-            </div>
-
-            {/* Step 2 */}
-            <div className="p-8 rounded-2xl glass-card border border-white/5 relative">
-              <div className="absolute top-6 right-6 font-display font-black text-4xl text-accent/15">02</div>
-              <div className="text-accent font-mono font-bold text-xs uppercase tracking-wider mb-6">Strategy Alignment</div>
-              <h3 className="font-display font-bold text-base sm:text-lg text-white mb-3">Creative Briefing</h3>
-              <p className="font-sans text-bebebe text-xs sm:text-sm leading-relaxed">
-                Our post-production coordinator maps out key retention pacing goals, visual styling cues, and timeline structures based on your brief.
-              </p>
-            </div>
-
-            {/* Step 3 */}
-            <div className="p-8 rounded-2xl glass-card border border-white/5 relative">
-              <div className="absolute top-6 right-6 font-display font-black text-4xl text-accent/15">03</div>
-              <div className="text-accent font-mono font-bold text-xs uppercase tracking-wider mb-6">Expert Forge</div>
-              <h3 className="font-display font-bold text-base sm:text-lg text-white mb-3">Professional Edit</h3>
-              <p className="font-sans text-bebebe text-xs sm:text-sm leading-relaxed">
-                Our professional editor works key sequences, constructs dialog flow, builds foley tracks, and conducts color correction.
-              </p>
-            </div>
-
-            {/* Step 4 */}
-            <div className="p-8 rounded-2xl glass-card border border-white/5 relative">
-              <div className="absolute top-6 right-6 font-display font-black text-4xl text-accent/15">04</div>
-              <div className="text-accent font-mono font-bold text-xs uppercase tracking-wider mb-6">Feedback Loop</div>
-              <h3 className="font-display font-bold text-base sm:text-lg text-white mb-3">Frame Review</h3>
-              <p className="font-sans text-bebebe text-xs sm:text-sm leading-relaxed">
-                Receive a private Frame.io preview link. Review your edit and place timestamped revision cues directly onto our video timeline.
-              </p>
-            </div>
-
-            {/* Step 5 */}
-            <div className="p-8 rounded-2xl glass-card border border-white/5 relative">
-              <div className="absolute top-6 right-6 font-display font-black text-4xl text-accent/15">05</div>
-              <div className="text-accent font-mono font-bold text-xs uppercase tracking-wider mb-6">Master Delivery</div>
-              <h3 className="font-display font-bold text-base sm:text-lg text-white mb-3">Polished Export</h3>
-              <p className="font-sans text-bebebe text-xs sm:text-sm leading-relaxed">
-                Your editor applies changes and exports master copies up to 4K resolution, pre-optimized for social platforms or broadcast distribution.
-              </p>
-            </div>
-
+          <div className="max-w-4xl mx-auto">
+            <BeforeAfterSlider />
           </div>
 
         </div>
       </section>
 
-      {/* 6. Premium Pricing Section */}
-      <section id="pricing" className="relative py-28 md:py-36 bg-[#020202]">
+      {/* 5. PORTFOLIO SHOWCASE */}
+      <section id="portfolio" className="relative py-24 md:py-32 bg-[#050505] border-t border-white/5">
         <div className="max-w-7xl mx-auto px-6 md:px-12">
           
-          <div className="text-center max-w-2xl mx-auto mb-20">
-            <span className="text-accent font-mono text-xs uppercase tracking-widest block mb-3">// Pricing blueprints</span>
+          <div className="text-center max-w-2xl mx-auto mb-16">
+            <span className="text-accent font-mono text-xs uppercase tracking-widest block mb-3">// Curated Video Deliverables</span>
             <h2 className="font-display font-black text-3xl sm:text-4xl lg:text-5xl tracking-tight leading-[1.1] text-white">
-              Transparent Production Packages
+              Sleek Creator Highlights
+            </h2>
+          </div>
+
+          <PortfolioShowcase />
+
+        </div>
+      </section>
+
+      {/* 6. CASE STUDIES WITH GRAPHS */}
+      <section id="case-studies" className="relative py-24 md:py-32 bg-[#020202] border-t border-white/5">
+        <div className="max-w-7xl mx-auto px-6 md:px-12">
+          
+          <div className="text-center max-w-2xl mx-auto mb-16">
+            <span className="text-accent font-mono text-xs uppercase tracking-widest block mb-3">// Deep Strategic Diagnostics</span>
+            <h2 className="font-display font-black text-3xl sm:text-4xl lg:text-5xl tracking-tight leading-[1.1] text-white">
+              Algorithmic Growth Archives
             </h2>
             <p className="font-sans text-bebebe text-sm sm:text-base leading-relaxed mt-4">
-              Choose the package that aligns with your timeline, channel velocity, or commercial campaign scope. Custom quotes available.
+              We track retention curves and conversion benchmarks. Read through our real performance records and viewer response trends.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-stretch max-w-6xl mx-auto">
-            
-            {/* Plan 1 */}
-            <div className="p-8 rounded-2xl glass-card flex flex-col justify-between border border-white/5 relative">
-              <div>
-                <span className="text-xs font-mono font-semibold text-accent uppercase tracking-wider block mb-2">Starter Forge</span>
-                <h3 className="font-display font-black text-2xl text-white mb-4">Growth Tier</h3>
-                <div className="flex items-baseline gap-1 mb-6">
-                  <span className="font-display font-black text-4xl text-white">$499</span>
-                  <span className="text-xs text-muted font-sans font-medium">/ per month</span>
-                </div>
-                <p className="text-xs text-bebebe font-sans leading-relaxed mb-6 border-b border-white/5 pb-6">
-                  Perfect for growth creators producing up to 4 short videos or 1 medium-length YouTube video every month.
-                </p>
+          <CaseStudies />
 
-                <ul className="space-y-4 text-xs font-sans text-bebebe mb-8">
-                  <li className="flex items-center gap-3">
-                    <Check className="w-4 h-4 text-accent shrink-0" />
-                    Up to 15 mins raw footage/vid
-                  </li>
-                  <li className="flex items-center gap-3">
-                    <Check className="w-4 h-4 text-accent shrink-0" />
-                    Color correction (Rec. 709)
-                  </li>
-                  <li className="flex items-center gap-3">
-                    <Check className="w-4 h-4 text-accent shrink-0" />
-                    Basic foley & licensed music
-                  </li>
-                  <li className="flex items-center gap-3">
-                    <Check className="w-4 h-4 text-accent shrink-0" />
-                    2 revision rounds per draft
-                  </li>
-                  <li className="flex items-center gap-3">
-                    <Check className="w-4 h-4 text-accent shrink-0" />
-                    72-hour turnaround time
-                  </li>
-                </ul>
-              </div>
+        </div>
+      </section>
 
-              <a 
-                href="#contact" 
-                className="w-full py-3 rounded-xl bg-white/5 hover:bg-white/10 text-white font-display font-bold text-xs border border-white/10 hover:border-accent text-center block transition-all"
-              >
-                Secure Growth Tier
-              </a>
-            </div>
+      {/* 7. INTERACTIVE PRICING CALCULATOR */}
+      <section id="pricing" className="relative py-24 md:py-32 bg-[#050505] border-t border-white/5">
+        <div className="max-w-7xl mx-auto px-6 md:px-12">
+          
+          <div className="text-center max-w-2xl mx-auto mb-16">
+            <span className="text-accent font-mono text-xs uppercase tracking-widest block mb-3">// Dynamic Production Planner</span>
+            <h2 className="font-display font-black text-3xl sm:text-4xl lg:text-5xl tracking-tight leading-[1.1] text-white">
+              Interactive Post Quote Planner
+            </h2>
+            <p className="font-sans text-bebebe text-sm sm:text-base leading-relaxed mt-4">
+              Calibrate your custom video budget instantly using our interactive budget slider widget. Request your contract with zero setup commitment.
+            </p>
+          </div>
 
-            {/* Plan 2: Highly Recommended */}
-            <div className="p-8 rounded-2xl bg-gradient-to-b from-[#111] to-[#080808] flex flex-col justify-between border-2 border-accent relative shadow-2xl">
-              <span className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-accent text-white font-mono font-black text-[10px] uppercase tracking-widest px-4 py-1 rounded-full shadow-[0_4px_10px_rgba(255,122,0,0.35)]">
-                Most Popular
-              </span>
-
-              <div>
-                <span className="text-xs font-mono font-semibold text-accent uppercase tracking-wider block mb-2 mt-2">Elite Production</span>
-                <h3 className="font-display font-black text-2xl text-white mb-4">Elite Retainer</h3>
-                <div className="flex items-baseline gap-1 mb-6">
-                  <span className="font-display font-black text-4xl text-white">$1,499</span>
-                  <span className="text-xs text-muted font-sans font-medium">/ per month</span>
-                </div>
-                <p className="text-xs text-bebebe font-sans leading-relaxed mb-6 border-b border-white/5 pb-6">
-                  Designed for heavy upload workflows, corporate marketing campaigns, and high-pacing content creators.
-                </p>
-
-                <ul className="space-y-4 text-xs font-sans text-bebebe mb-8">
-                  <li className="flex items-center gap-3">
-                    <Check className="w-4 h-4 text-accent shrink-0" />
-                    <strong>Unlimited</strong> short-form OR 4 long-form videos
-                  </li>
-                  <li className="flex items-center gap-3">
-                    <Check className="w-4 h-4 text-accent shrink-0" />
-                    Advanced primary & secondary color science
-                  </li>
-                  <li className="flex items-center gap-3">
-                    <Check className="w-4 h-4 text-accent shrink-0" />
-                    Dynamic text typography overlays & sound design
-                  </li>
-                  <li className="flex items-center gap-3">
-                    <Check className="w-4 h-4 text-accent shrink-0" />
-                    <strong>Unlimited</strong> revisions via Frame.io
-                  </li>
-                  <li className="flex items-center gap-3">
-                    <Check className="w-4 h-4 text-accent shrink-0" />
-                    Fast 48-hour priority draft delivery
-                  </li>
-                  <li className="flex items-center gap-3">
-                    <Check className="w-4 h-4 text-accent shrink-0" />
-                    Dedicated coordinator communication channel
-                  </li>
-                </ul>
-              </div>
-
-              <a 
-                href="#contact" 
-                className="w-full py-4 rounded-xl bg-accent hover:bg-accent-dark text-white font-display font-black text-xs text-center block transition-all shadow-[0_4px_20px_rgba(255,122,0,0.3)]"
-              >
-                Claim Priority Slots
-              </a>
-            </div>
-
-            {/* Plan 3 */}
-            <div className="p-8 rounded-2xl glass-card flex flex-col justify-between border border-white/5 relative">
-              <div>
-                <span className="text-xs font-mono font-semibold text-accent uppercase tracking-wider block mb-2">Bespoke Filmmaking</span>
-                <h3 className="font-display font-black text-2xl text-white mb-4">Studio Premium</h3>
-                <div className="flex items-baseline gap-1 mb-6">
-                  <span className="font-display font-black text-4xl text-white">$2,999</span>
-                  <span className="text-xs text-muted font-sans font-medium">/ starting price</span>
-                </div>
-                <p className="text-xs text-bebebe font-sans leading-relaxed mb-6 border-b border-white/5 pb-6">
-                  Bespoke post-production mapping, high-fidelity documentaries, full-scale brand commercials, or theatrical trailers.
-                </p>
-
-                <ul className="space-y-4 text-xs font-sans text-bebebe mb-8">
-                  <li className="flex items-center gap-3">
-                    <Check className="w-4 h-4 text-accent shrink-0" />
-                    Multi-cam RED/ARRI alignment support
-                  </li>
-                  <li className="flex items-center gap-3">
-                    <Check className="w-4 h-4 text-accent shrink-0" />
-                    Bespoke soundscapes, licensed tracks, custom foley
-                  </li>
-                  <li className="flex items-center gap-3">
-                    <Check className="w-4 h-4 text-accent shrink-0" />
-                    HDR mastering & Dolby Atmos mixing support
-                  </li>
-                  <li className="flex items-center gap-3">
-                    <Check className="w-4 h-4 text-accent shrink-0" />
-                    Infinite revision pipeline
-                  </li>
-                  <li className="flex items-center gap-3">
-                    <Check className="w-4 h-4 text-accent shrink-0" />
-                    Direct production lead collaboration
-                  </li>
-                </ul>
-              </div>
-
-              <a 
-                href="#contact" 
-                className="w-full py-3 rounded-xl bg-white/5 hover:bg-white/10 text-white font-display font-bold text-xs border border-white/10 hover:border-accent text-center block transition-all"
-              >
-                Inquire Studio Contract
-              </a>
-            </div>
-
+          <div className="max-w-4xl mx-auto">
+            <PricingCalculator />
           </div>
 
         </div>
       </section>
 
-      {/* 7. Interactive Testimonials Section */}
-      <section className="relative py-28 md:py-36 bg-[#050505] border-t border-white/5">
+      {/* 8. REELGPT AI STRATEGY ENGINE */}
+      <section id="gpt-blueprint" className="relative py-24 md:py-32 bg-[#020202] border-t border-white/5">
         <div className="max-w-7xl mx-auto px-6 md:px-12">
           
-          <div className="text-center max-w-2xl mx-auto mb-20">
-            <span className="text-accent font-mono text-xs uppercase tracking-widest block mb-3">// Reel Results</span>
+          <div className="text-center max-w-2xl mx-auto mb-16">
+            <span className="text-accent font-mono text-xs uppercase tracking-widest block mb-3">// Intelligent Content Architect</span>
             <h2 className="font-display font-black text-3xl sm:text-4xl lg:text-5xl tracking-tight leading-[1.1] text-white">
-              Endorsed by Top Producers & Creators
+              ReelGPT Strategy Blueprint
+            </h2>
+            <p className="font-sans text-bebebe text-sm sm:text-base leading-relaxed mt-4">
+              Pitch your video project concept to our strategist engine. It will immediately synthesize high-retention cues, optimal sound profiles, and budget recommendations.
+            </p>
+          </div>
+
+          <div className="max-w-5xl mx-auto">
+            <AiQuoteGenerator onBookCallClick={() => {
+              const element = document.getElementById('book-call');
+              if (element) element.scrollIntoView({ behavior: 'smooth' });
+            }} />
+          </div>
+
+        </div>
+      </section>
+
+      {/* 9. THE ONBOARDING PROCESS (animated workflow timeline) */}
+      <section className="relative py-24 md:py-32 bg-[#050505] border-t border-white/5">
+        <div className="max-w-7xl mx-auto px-6 md:px-12">
+          
+          <div className="text-center max-w-2xl mx-auto mb-16">
+            <span className="text-accent font-mono text-xs uppercase tracking-widest block mb-3">// Flawless Onboarding</span>
+            <h2 className="font-display font-black text-3xl sm:text-4xl lg:text-5xl tracking-tight leading-[1.1] text-white">
+              Our 5-Step Editorial Pipeline
             </h2>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            
-            <div className="p-8 rounded-2xl glass-card border border-white/5 flex flex-col justify-between">
-              <div>
-                <div className="flex gap-1 mb-4 text-accent">
-                  <Star className="w-4 h-4 fill-accent" />
-                  <Star className="w-4 h-4 fill-accent" />
-                  <Star className="w-4 h-4 fill-accent" />
-                  <Star className="w-4 h-4 fill-accent" />
-                  <Star className="w-4 h-4 fill-accent" />
-                </div>
-                <p className="font-sans text-bebebe text-sm leading-relaxed italic">
-                  &quot;The pacing and sound design from ReelForge are absolutely flawless. They took our documentary rushes and sculpted a beautiful story that has now reached over 3 million views.&quot;
-                </p>
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
+            {[
+              { num: '01', title: 'Asset Drop', text: 'Deliver your RAW footage, audio stems, and corporate style docs via our high-speed Google Drive channels.' },
+              { num: '02', title: 'Director Brief', text: 'Our post coordinator aligns pacing hooks, visual themes, and LUT styles to fulfill your brief.' },
+              { num: '03', title: 'Surgical Edit', text: 'Our professional lead editor cuts, normalizes vocals, blends foley tracks, and conducts grading.' },
+              { num: '04', title: 'Revision Loop', text: 'Review master cuts frame-by-frame on Frame.io and pin timestamped notes directly.' },
+              { num: '05', title: 'Ultra-HD Export', text: 'Receive your master file renders up to 4K resolution, perfectly scaled for algorithmic channels.' }
+            ].map((step, idx) => (
+              <div key={idx} className="p-6 rounded-2xl glass-card border border-white/5 relative">
+                <span className="absolute top-4 right-4 font-display font-black text-3xl text-accent/10">{step.num}</span>
+                <span className="text-[10px] font-mono text-accent uppercase tracking-wider block mb-4">Stage {idx + 1}</span>
+                <h4 className="font-display font-bold text-base text-white mb-2">{step.title}</h4>
+                <p className="text-xs text-bebebe leading-relaxed">{step.text}</p>
               </div>
-              <div className="mt-8 border-t border-white/5 pt-4 flex items-center gap-4">
-                <div className="w-10 h-10 rounded-full bg-accent/20 flex items-center justify-center font-display font-bold text-accent text-sm">
-                  KH
-                </div>
-                <div>
-                  <h4 className="font-display font-bold text-sm text-white">Kenneth H.</h4>
-                  <p className="font-sans text-[11px] text-muted">Creative Director, Worldly Documentaries</p>
-                </div>
-              </div>
-            </div>
-
-            <div className="p-8 rounded-2xl glass-card border border-white/5 flex flex-col justify-between">
-              <div>
-                <div className="flex gap-1 mb-4 text-accent">
-                  <Star className="w-4 h-4 fill-accent" />
-                  <Star className="w-4 h-4 fill-accent" />
-                  <Star className="w-4 h-4 fill-accent" />
-                  <Star className="w-4 h-4 fill-accent" />
-                  <Star className="w-4 h-4 fill-accent" />
-                </div>
-                <p className="font-sans text-bebebe text-sm leading-relaxed italic">
-                  &quot;I have doubled my channel subscription count since moving my edits to the ReelForge retainer. They know how to edit the first 10 seconds of a video to keep eyes on the screen.&quot;
-                </p>
-              </div>
-              <div className="mt-8 border-t border-white/5 pt-4 flex items-center gap-4">
-                <div className="w-10 h-10 rounded-full bg-accent/20 flex items-center justify-center font-display font-bold text-accent text-sm">
-                  MD
-                </div>
-                <div>
-                  <h4 className="font-display font-bold text-sm text-white">Midnight Odyssey</h4>
-                  <p className="font-sans text-[11px] text-muted">6.2M Subscriber Creator</p>
-                </div>
-              </div>
-            </div>
-
-            <div className="p-8 rounded-2xl glass-card border border-white/5 flex flex-col justify-between">
-              <div>
-                <div className="flex gap-1 mb-4 text-accent">
-                  <Star className="w-4 h-4 fill-accent" />
-                  <Star className="w-4 h-4 fill-accent" />
-                  <Star className="w-4 h-4 fill-accent" />
-                  <Star className="w-4 h-4 fill-accent" />
-                  <Star className="w-4 h-4 fill-accent" />
-                </div>
-                <p className="font-sans text-bebebe text-sm leading-relaxed italic">
-                  &quot;Their automotive color science is incredible. ReelForge edited singer classic Porsche promotions and completely nailed the elite luxury aesthetic our brand demands.&quot;
-                </p>
-              </div>
-              <div className="mt-8 border-t border-white/5 pt-4 flex items-center gap-4">
-                <div className="w-10 h-10 rounded-full bg-accent/20 flex items-center justify-center font-display font-bold text-accent text-sm">
-                  SV
-                </div>
-                <div>
-                  <h4 className="font-display font-bold text-sm text-white">Singer Vehicles Team</h4>
-                  <p className="font-sans text-[11px] text-muted">Marketing Director</p>
-                </div>
-              </div>
-            </div>
-
+            ))}
           </div>
 
         </div>
       </section>
 
-      {/* 8. FAQ Section */}
-      <section id="faq" className="relative py-28 md:py-36 bg-[#020202]">
+      {/* 10. INTERACTIVE CALENDAR BOOKING SYSTEM */}
+      <section id="book-call" className="relative py-24 md:py-32 bg-[#020202] border-t border-white/5">
         <div className="max-w-7xl mx-auto px-6 md:px-12">
           
-          <div className="text-center max-w-2xl mx-auto mb-20">
-            <span className="text-accent font-mono text-xs uppercase tracking-widest block mb-3">// Knowledge Base</span>
+          <div className="text-center max-w-2xl mx-auto mb-16">
+            <span className="text-accent font-mono text-xs uppercase tracking-widest block mb-3">// Direct Calendar Dispatch</span>
             <h2 className="font-display font-black text-3xl sm:text-4xl lg:text-5xl tracking-tight leading-[1.1] text-white">
-              Onboarding & Workflow Questions
+              Schedule Your Creative Sync
             </h2>
           </div>
 
-          <FAQSection />
+          <div className="max-w-4xl mx-auto">
+            <BookCall />
+          </div>
 
         </div>
       </section>
 
-      {/* 9. Connected Lead Collection Google Apps Script Contact Form */}
+      {/* 11. SEO BLOG COMPREHENSIVE ARCHIVE */}
+      <section id="blog" className="relative py-24 md:py-32 bg-[#050505] border-t border-white/5">
+        <div className="max-w-7xl mx-auto px-6 md:px-12">
+          
+          <div className="text-center max-w-2xl mx-auto mb-16">
+            <span className="text-accent font-mono text-xs uppercase tracking-widest block mb-3">// Algorithmic Education Hub</span>
+            <h2 className="font-display font-black text-3xl sm:text-4xl lg:text-5xl tracking-tight leading-[1.1] text-white">
+              The Post-Production Playbook
+            </h2>
+            <p className="font-sans text-bebebe text-sm sm:text-base leading-relaxed mt-4">
+              Read about premium video color grading techniques, Premiere Pro secrets, and viral retention tricks formulated by our post directors.
+            </p>
+          </div>
+
+          <BlogSystem />
+
+        </div>
+      </section>
+
+      {/* 12. TESTIMONIALS SLIDER SECTION */}
+      <section className="relative py-24 md:py-32 bg-[#020202] border-t border-white/5">
+        <div className="max-w-7xl mx-auto px-6 md:px-12">
+          
+          <div className="text-center max-w-2xl mx-auto mb-16">
+            <span className="text-accent font-mono text-xs uppercase tracking-widest block mb-3">// Elite Endorsements</span>
+            <h2 className="font-display font-black text-3xl sm:text-4xl lg:text-5xl tracking-tight leading-[1.1] text-white">
+              What Our Long-term Clients Say
+            </h2>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {testimonials.map((t, idx) => (
+              <div 
+                key={t.id || idx}
+                className="p-8 rounded-2xl glass-card border border-white/5 flex flex-col justify-between"
+              >
+                <div>
+                  <div className="flex gap-1 mb-4 text-accent">
+                    <Star className="w-4 h-4 fill-accent text-accent" />
+                    <Star className="w-4 h-4 fill-accent text-accent" />
+                    <Star className="w-4 h-4 fill-accent text-accent" />
+                    <Star className="w-4 h-4 fill-accent text-accent" />
+                    <Star className="w-4 h-4 fill-accent text-accent" />
+                  </div>
+                  <p className="font-sans text-bebebe text-xs sm:text-sm leading-relaxed italic">
+                    "{t.comment}"
+                  </p>
+                </div>
+                <div className="mt-8 border-t border-white/5 pt-4 flex items-center gap-4">
+                  <img
+                    src={t.avatarUrl}
+                    alt={t.name}
+                    className="w-10 h-10 rounded-full object-cover border border-white/10"
+                    referrerPolicy="no-referrer"
+                  />
+                  <div>
+                    <h4 className="font-display font-bold text-xs sm:text-sm text-white">{t.name}</h4>
+                    <p className="font-sans text-[10px] text-muted">{t.profession}</p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+        </div>
+      </section>
+
+      {/* 13. FAQ ACCORDION SECTION */}
+      <section id="faq" className="relative py-24 md:py-32 bg-[#050505] border-t border-white/5">
+        <div className="max-w-7xl mx-auto px-6 md:px-12">
+          
+          <div className="text-center max-w-2xl mx-auto mb-16">
+            <span className="text-accent font-mono text-xs uppercase tracking-widest block mb-3">// Frequently Asked Questions</span>
+            <h2 className="font-display font-black text-3xl sm:text-4xl lg:text-5xl tracking-tight leading-[1.1] text-white">
+              Shedding Light on Production Details
+            </h2>
+          </div>
+
+          <div className="max-w-3xl mx-auto space-y-4">
+            {faqs.map((faq, idx) => {
+              const isOpen = openFaqIndex === idx;
+              return (
+                <div 
+                  key={faq.id || idx}
+                  className="rounded-2xl glass-card border border-white/5 overflow-hidden transition-all duration-300"
+                >
+                  <button
+                    onClick={() => setOpenFaqIndex(isOpen ? null : idx)}
+                    className="w-full p-6 text-left flex items-center justify-between gap-4 text-white hover:text-accent transition-colors cursor-pointer"
+                  >
+                    <span className="font-display font-bold text-sm sm:text-base flex items-center gap-2">
+                      <HelpCircle className="w-4 h-4 text-accent" /> {faq.question}
+                    </span>
+                    <ChevronDown className={`w-5 h-5 shrink-0 text-accent transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} />
+                  </button>
+                  <AnimatePresence>
+                    {isOpen && (
+                      <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: 'auto', opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.25 }}
+                      >
+                        <div className="px-6 pb-6 pt-1 border-t border-white/5 text-xs sm:text-sm text-bebebe font-sans leading-relaxed">
+                          {faq.answer}
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              );
+            })}
+          </div>
+
+        </div>
+      </section>
+
+      {/* 14. CONTACT BRIEF FORM */}
       <Contact />
 
-      {/* 10. Sleek Cinematic Footer */}
-      <footer className="relative py-16 bg-[#020202] border-t border-white/5">
-        <div className="max-w-7xl mx-auto px-6 md:px-12 flex flex-col md:flex-row items-center justify-between gap-8">
-          <div>
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-lg bg-accent flex items-center justify-center">
+      {/* 15. LUXURY FOOTER */}
+      <footer className="relative bg-black border-t border-white/5 py-12 md:py-16 text-xs text-muted">
+        <div className="max-w-7xl mx-auto px-6 md:px-12 grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
+          
+          <div className="space-y-4">
+            <a href="#hero" className="flex items-center gap-3 group">
+              <div className="relative w-8 h-8 rounded-lg bg-gradient-to-tr from-accent to-[#FF4D00] flex items-center justify-center shadow-[0_0_15px_rgba(255,122,0,0.4)] group-hover:scale-105 transition-transform">
                 <Film className="w-4 h-4 text-white" />
               </div>
               <span className="font-display font-black text-lg tracking-tight text-white">
                 ReelForge<span className="text-accent">.</span>
               </span>
-            </div>
-            <p className="text-[11px] text-muted font-sans mt-3">
-              © {new Date().getFullYear()} ReelForge Studios. All production rights reserved.
+            </a>
+            <p className="font-sans leading-relaxed text-muted/80 max-w-xs">
+              Elite next-gen video post-production studio scaling creative agencies, finance explainers, and high-pacing video narrative styles.
             </p>
           </div>
 
-          <div className="flex gap-8 text-xs font-mono text-muted">
-            <a href="#services" className="hover:text-accent transition-colors">Services</a>
-            <a href="#portfolio" className="hover:text-accent transition-colors">Portfolio</a>
-            <a href="#pricing" className="hover:text-accent transition-colors">Pricing</a>
-            <a href="#faq" className="hover:text-accent transition-colors">FAQ</a>
+          <div>
+            <h5 className="font-display font-bold text-xs uppercase tracking-wider text-white mb-4">Post Directories</h5>
+            <ul className="space-y-2 font-sans text-bebebe">
+              <li><a href="#services" className="hover:text-accent transition-colors">Capabilities</a></li>
+              <li><a href="#sliders" className="hover:text-accent transition-colors">Before/After Timelines</a></li>
+              <li><a href="#portfolio" className="hover:text-accent transition-colors">Case Portfolios</a></li>
+              <li><a href="#pricing" className="hover:text-accent transition-colors">Pricing blueprints</a></li>
+            </ul>
+          </div>
+
+          <div>
+            <h5 className="font-display font-bold text-xs uppercase tracking-wider text-white mb-4">Strategic Assets</h5>
+            <ul className="space-y-2 font-sans text-bebebe">
+              <li><a href="#blog" className="hover:text-accent transition-colors">SEO Growth Articles</a></li>
+              <li><a href="#gpt-blueprint" className="hover:text-accent transition-colors">ReelGPT Strategist</a></li>
+              <li><a href="#book-call" className="hover:text-accent transition-colors">Book Consult Call</a></li>
+              <li><button onClick={() => setAdminOpen(true)} className="hover:text-accent transition-colors font-mono text-[10px] text-accent">🛠️ Access Live Database Console</button></li>
+            </ul>
+          </div>
+
+          <div>
+            <h5 className="font-display font-bold text-xs uppercase tracking-wider text-white mb-4">Direct Offices</h5>
+            <p className="leading-relaxed font-sans text-bebebe mb-2">
+              ReelForge Agency Studios LLC<br />
+              9440 Santa Monica Blvd, Suite 300<br />
+              Beverly Hills, CA 90210
+            </p>
+            <span className="text-[10px] block font-mono text-accent">coordinators@reelforge.com</span>
+          </div>
+
+        </div>
+
+        <div className="max-w-7xl mx-auto px-6 md:px-12 pt-8 border-t border-white/5 flex flex-col sm:flex-row items-center justify-between gap-4 font-sans text-[10px]">
+          <p>© {new Date().getFullYear()} ReelForge. All master production rights reserved.</p>
+          <div className="flex gap-4">
+            <a href="#" className="hover:text-white transition-colors">Privacy Policy</a>
+            <a href="#" className="hover:text-white transition-colors">Terms of Service</a>
+            <a href="#" className="hover:text-white transition-colors">Onboarding Guide</a>
           </div>
         </div>
       </footer>
