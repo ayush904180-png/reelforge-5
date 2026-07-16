@@ -18,7 +18,12 @@ import {
   Check, 
   Cpu, 
   Database,
-  Terminal
+  Terminal,
+  Lock,
+  Unlock,
+  Key,
+  ArrowUp,
+  ArrowDown
 } from 'lucide-react';
 import { Service, PortfolioItem, CaseStudy, Testimonial, BlogPost, FAQItem, PricingPlan } from '../types';
 import { 
@@ -58,6 +63,15 @@ export default function AdminPanel({ isOpen, onClose, onDataRefresh }: AdminPane
   const [editId, setEditId] = useState<string | null>(null);
   const [editForm, setEditForm] = useState<any>({});
 
+  // Passcode security states
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [passcodeAttempt, setPasscodeAttempt] = useState('');
+  const [passcodeError, setPasscodeError] = useState(false);
+  const [isPasscodeConfigOpen, setIsPasscodeConfigOpen] = useState(false);
+  const [newPasscode, setNewPasscode] = useState('');
+  const [confirmNewPasscode, setConfirmNewPasscode] = useState('');
+  const [passcodeConfigError, setPasscodeConfigError] = useState<string | null>(null);
+
   // Load all databases from storage
   useEffect(() => {
     if (isOpen) {
@@ -69,8 +83,57 @@ export default function AdminPanel({ isOpen, onClose, onDataRefresh }: AdminPane
       setFaqs(getStoredData<FAQItem[]>('reelforge_faqs', initialFAQs));
       setPricing(getStoredData<PricingPlan[]>('reelforge_pricing', initialPricingPlans));
       setEditId(null);
+
+      // Auto-lock the console for premium security
+      setIsAuthenticated(false);
+      setPasscodeAttempt('');
+      setPasscodeError(false);
+      setIsPasscodeConfigOpen(false);
+      setPasscodeConfigError(null);
+
+      // Smooth scroll down to the bottom console region
+      setTimeout(() => {
+        const consoleEl = document.getElementById('admin-console');
+        if (consoleEl) {
+          consoleEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }, 200);
     }
   }, [isOpen]);
+
+  const handleVerifyPasscode = (e: React.FormEvent) => {
+    e.preventDefault();
+    const correctPasscode = (localStorage.getItem('reelforge_admin_passcode') || 'reelforge').trim();
+    if (passcodeAttempt.trim() === correctPasscode) {
+      setIsAuthenticated(true);
+      setPasscodeError(false);
+    } else {
+      setPasscodeError(true);
+      setTimeout(() => setPasscodeError(false), 2000);
+    }
+  };
+
+  const handleChangePasscode = (e: React.FormEvent) => {
+    e.preventDefault();
+    setPasscodeConfigError(null);
+
+    const trimmedPasscode = newPasscode.trim();
+    const trimmedConfirm = confirmNewPasscode.trim();
+
+    if (!trimmedPasscode) {
+      setPasscodeConfigError("Passcode cannot be empty.");
+      return;
+    }
+    if (trimmedPasscode !== trimmedConfirm) {
+      setPasscodeConfigError("New passcodes do not match.");
+      return;
+    }
+    localStorage.setItem('reelforge_admin_passcode', trimmedPasscode);
+    triggerSaveNotification("Security access key updated.");
+    setIsPasscodeConfigOpen(false);
+    setNewPasscode('');
+    setConfirmNewPasscode('');
+  };
 
   const triggerSaveNotification = (message: string) => {
     setSaveStatus(message);
@@ -80,6 +143,7 @@ export default function AdminPanel({ isOpen, onClose, onDataRefresh }: AdminPane
 
   const handleResetToDefault = () => {
     if (confirm("Are you sure you want to reset all data back to high-fidelity ReelForge agency factory defaults? This will overwrite local edits.")) {
+      localStorage.removeItem('reelforge_admin_passcode');
       localStorage.removeItem('reelforge_services');
       localStorage.removeItem('reelforge_portfolio');
       localStorage.removeItem('reelforge_case_studies');
@@ -339,42 +403,106 @@ export default function AdminPanel({ isOpen, onClose, onDataRefresh }: AdminPane
   return (
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-md font-sans">
+        <div className="fixed inset-0 z-[99] bg-black/80 backdrop-blur-md flex items-end justify-center p-4 md:p-6 lg:p-10 font-sans">
           <motion.div
-            initial={{ opacity: 0, scale: 0.98, y: 15 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.98, y: 15 }}
-            className="w-full max-w-5xl h-[90vh] rounded-3xl bg-gradient-to-br from-[#0c0c0c] to-[#040404] border-2 border-white/10 overflow-hidden flex flex-col justify-between relative shadow-2xl"
+            initial={{ opacity: 0, y: 100 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 100 }}
+            transition={{ type: "spring", damping: 25, stiffness: 180 }}
+            className="w-full max-w-7xl h-[85vh] rounded-3xl bg-gradient-to-br from-[#0c0c0c] to-[#040404] border border-accent/30 overflow-hidden flex flex-col justify-between relative shadow-[0_0_50px_rgba(255,122,0,0.35)]"
           >
-            {/* Header tab section */}
-            <div className="p-6 border-b border-white/5 bg-black/40 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-accent/10 border border-accent/20 flex items-center justify-center text-accent">
-                  <Settings className="w-5 h-5 animate-spin" />
-                </div>
-                <div>
-                  <h3 className="font-display font-black text-xl text-white flex items-center gap-2">
-                    Forge Admin Portal <span className="text-[10px] bg-accent/20 border border-accent/30 text-accent px-1.5 py-0.5 rounded uppercase font-mono">v2.0 Database</span>
-                  </h3>
-                  <p className="text-xs text-muted">Manage all agency content records with zero codebase overrides.</p>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-2.5">
-                <button
-                  onClick={handleResetToDefault}
-                  className="px-3 py-1.5 rounded-lg border border-red-500/20 bg-red-500/5 hover:bg-red-500/15 text-[10px] font-mono text-red-400 cursor-pointer flex items-center gap-1.5 transition-all"
-                >
-                  <RefreshCw className="w-3.5 h-3.5" /> Reset Factory Defaults
-                </button>
+            {!isAuthenticated ? (
+              <div className="flex-grow flex flex-col items-center justify-center p-8 text-center relative h-full">
+                {/* Beautiful close button */}
                 <button
                   onClick={onClose}
-                  className="p-2 rounded-lg bg-white/5 hover:bg-white/10 text-white cursor-pointer"
+                  className="absolute top-6 right-6 p-2 rounded-lg bg-white/5 hover:bg-white/10 text-white cursor-pointer transition-colors"
                 >
                   <X className="w-5 h-5" />
                 </button>
+
+                <div className="max-w-md w-full p-8 rounded-3xl bg-black/40 backdrop-blur-md border border-white/10 shadow-2xl relative overflow-hidden">
+                  {/* Glowing backdrop circle */}
+                  <div className="absolute -top-10 -right-10 w-32 h-32 bg-accent/20 rounded-full blur-2xl pointer-events-none" />
+
+                  <div className="w-16 h-16 rounded-2xl bg-accent/15 border border-accent/20 text-accent flex items-center justify-center mx-auto mb-6 shadow-[0_0_20px_rgba(255,122,0,0.25)]">
+                    <FolderLock className="w-8 h-8" />
+                  </div>
+
+                  <span className="text-[9px] font-mono text-accent uppercase tracking-widest block mb-2">// SECURE CORE GATEWAY</span>
+                  <h3 className="font-display font-black text-2xl text-white mb-3">Forge Console Locked</h3>
+                  <p className="text-xs text-bebebe leading-relaxed mb-6">
+                    Enter administrative credentials to unlock content sheets and active subscription blueprints.
+                  </p>
+
+                  <form onSubmit={handleVerifyPasscode} className="space-y-4">
+                    <div className="relative">
+                      <input
+                        type="password"
+                        required
+                        value={passcodeAttempt}
+                        onChange={(e) => setPasscodeAttempt(e.target.value)}
+                        placeholder="••••••••••••"
+                        className={`w-full px-4 py-3.5 pl-10 rounded-xl bg-white/5 border text-center text-white text-sm focus:outline-none focus:border-accent tracking-widest ${
+                          passcodeError ? 'border-red-500/50 bg-red-500/5' : 'border-white/5 hover:border-white/15'
+                        }`}
+                      />
+                      <Key className="w-4 h-4 text-muted absolute left-3.5 top-1/2 -translate-y-1/2" />
+                    </div>
+
+                    {passcodeError && (
+                      <p className="text-[10px] font-mono text-red-400 font-semibold animate-pulse">
+                        ACCESS DENIED: INVALID PASSCODE
+                      </p>
+                    )}
+
+                    <button
+                      type="submit"
+                      className="w-full py-3.5 rounded-xl bg-accent hover:bg-accent-dark text-white font-display font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all cursor-pointer shadow-[0_4px_15px_rgba(255,122,0,0.25)] hover:shadow-[0_0_20px_rgba(255,122,0,0.45)] hover:-translate-y-0.5"
+                    >
+                      <Lock className="w-4 h-4" /> Authenticate Access Key
+                    </button>
+                  </form>
+                </div>
               </div>
-            </div>
+            ) : (
+              <>
+                {/* Header tab section */}
+                <div className="p-6 border-b border-white/5 bg-black/40 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-accent/10 border border-accent/20 flex items-center justify-center text-accent">
+                      <Settings className="w-5 h-5 animate-spin" />
+                    </div>
+                    <div>
+                      <h3 className="font-display font-black text-xl text-white flex items-center gap-2">
+                        Forge Admin Portal <span className="text-[10px] bg-accent/20 border border-accent/30 text-accent px-1.5 py-0.5 rounded uppercase font-mono">v2.0 Database</span>
+                      </h3>
+                      <p className="text-xs text-muted font-sans">Manage all agency content records with zero codebase overrides.</p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2.5">
+                    {/* Security Passcode Config Button */}
+                    <button
+                      onClick={() => setIsPasscodeConfigOpen(true)}
+                      className="px-3 py-1.5 rounded-lg border border-accent/20 bg-accent/5 hover:bg-accent/15 text-[10px] font-mono text-accent cursor-pointer flex items-center gap-1.5 transition-all"
+                    >
+                      <Key className="w-3.5 h-3.5 text-accent" /> Change Passcode
+                    </button>
+                    <button
+                      onClick={handleResetToDefault}
+                      className="px-3 py-1.5 rounded-lg border border-red-500/20 bg-red-500/5 hover:bg-red-500/15 text-[10px] font-mono text-red-400 cursor-pointer flex items-center gap-1.5 transition-all"
+                    >
+                      <RefreshCw className="w-3.5 h-3.5" /> Reset Factory Defaults
+                    </button>
+                    <button
+                      onClick={onClose}
+                      className="p-2 rounded-lg bg-white/5 hover:bg-white/10 text-white cursor-pointer"
+                    >
+                      <X className="w-5 h-5" />
+                    </button>
+                  </div>
+                </div>
 
             {/* Main Stage Grid (Left rail tabs, right forms) */}
             <div className="flex-grow flex flex-col md:flex-row overflow-hidden">
@@ -480,7 +608,7 @@ export default function AdminPanel({ isOpen, onClose, onDataRefresh }: AdminPane
 
                     {/* PRICING PLANS EDITOR */}
                     {activeTab === 'pricing' && (
-                      <div className="space-y-3">
+                      <div className="space-y-4">
                         <div className="grid grid-cols-2 gap-3">
                           <div>
                             <label className="block text-[9px] uppercase font-mono text-muted mb-1">Plan Name</label>
@@ -501,6 +629,29 @@ export default function AdminPanel({ isOpen, onClose, onDataRefresh }: AdminPane
                             />
                           </div>
                         </div>
+
+                        <div className="grid grid-cols-2 gap-3">
+                          <div>
+                            <label className="block text-[9px] uppercase font-mono text-muted mb-1">Plan Badge (e.g. "Most Popular")</label>
+                            <input 
+                              type="text" 
+                              value={editForm.badge || ''} 
+                              onChange={(e) => setEditForm({ ...editForm, badge: e.target.value })}
+                              className="w-full p-2.5 rounded-lg bg-white/5 border border-white/5 text-white text-xs focus:outline-none focus:border-accent"
+                              placeholder="Optional badge label"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-[9px] uppercase font-mono text-muted mb-1">Billing Period (e.g. "month", "starting")</label>
+                            <input 
+                              type="text" 
+                              value={editForm.period || 'month'} 
+                              onChange={(e) => setEditForm({ ...editForm, period: e.target.value })}
+                              className="w-full p-2.5 rounded-lg bg-white/5 border border-white/5 text-white text-xs focus:outline-none focus:border-accent"
+                            />
+                          </div>
+                        </div>
+
                         <div>
                           <label className="block text-[9px] uppercase font-mono text-muted mb-1">Plan Description</label>
                           <textarea 
@@ -510,6 +661,115 @@ export default function AdminPanel({ isOpen, onClose, onDataRefresh }: AdminPane
                             className="w-full p-2.5 rounded-lg bg-white/5 border border-white/5 text-white text-xs focus:outline-none focus:border-accent resize-none"
                           />
                         </div>
+
+                        {/* PLAN DELIVERABLES AND FEATURES */}
+                        <div className="border-t border-white/5 pt-4">
+                          <label className="block text-[10px] uppercase font-mono text-accent mb-2 flex justify-between items-center">
+                            <span>Plan Features & Deliverables List</span>
+                            <span className="text-[9px] text-muted font-normal lowercase">drag-free interactive list</span>
+                          </label>
+                          
+                          <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
+                            {(editForm.features || []).map((feature: string, index: number) => (
+                              <div key={index} className="flex items-center gap-2">
+                                <input 
+                                  type="text" 
+                                  value={feature} 
+                                  onChange={(e) => {
+                                    const updatedFeatures = [...(editForm.features || [])];
+                                    updatedFeatures[index] = e.target.value;
+                                    setEditForm({ ...editForm, features: updatedFeatures });
+                                  }}
+                                  className="flex-grow p-2 rounded-lg bg-white/5 border border-white/5 text-white text-xs focus:outline-none focus:border-accent"
+                                />
+                                {/* Move Up */}
+                                <button 
+                                  type="button"
+                                  disabled={index === 0}
+                                  onClick={() => {
+                                    if (index > 0) {
+                                      const updatedFeatures = [...editForm.features];
+                                      const temp = updatedFeatures[index];
+                                      updatedFeatures[index] = updatedFeatures[index - 1];
+                                      updatedFeatures[index - 1] = temp;
+                                      setEditForm({ ...editForm, features: updatedFeatures });
+                                    }
+                                  }}
+                                  className="p-1.5 rounded-lg bg-white/3 hover:bg-white/10 text-bebebe hover:text-white disabled:opacity-30 cursor-pointer"
+                                  title="Move Deliverable Up"
+                                >
+                                  <ArrowUp className="w-3.5 h-3.5" />
+                                </button>
+                                {/* Move Down */}
+                                <button 
+                                  type="button"
+                                  disabled={index === editForm.features.length - 1}
+                                  onClick={() => {
+                                    if (index < editForm.features.length - 1) {
+                                      const updatedFeatures = [...editForm.features];
+                                      const temp = updatedFeatures[index];
+                                      updatedFeatures[index] = updatedFeatures[index + 1];
+                                      updatedFeatures[index + 1] = temp;
+                                      setEditForm({ ...editForm, features: updatedFeatures });
+                                    }
+                                  }}
+                                  className="p-1.5 rounded-lg bg-white/3 hover:bg-white/10 text-bebebe hover:text-white disabled:opacity-30 cursor-pointer"
+                                  title="Move Deliverable Down"
+                                >
+                                  <ArrowDown className="w-3.5 h-3.5" />
+                                </button>
+                                {/* Delete feature */}
+                                <button 
+                                  type="button"
+                                  onClick={() => {
+                                    const updatedFeatures = editForm.features.filter((_: any, i: number) => i !== index);
+                                    setEditForm({ ...editForm, features: updatedFeatures });
+                                  }}
+                                  className="p-1.5 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 cursor-pointer"
+                                  title="Delete Deliverable"
+                                >
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                </button>
+                              </div>
+                            ))}
+                          </div>
+
+                          {/* Add New Feature Line */}
+                          <div className="flex gap-2 mt-3">
+                            <input 
+                              type="text" 
+                              id="new-feature-input"
+                              placeholder="Insert a new premium deliverable..."
+                              className="flex-grow p-2.5 rounded-lg bg-white/5 border border-white/5 text-white text-xs focus:outline-none focus:border-accent"
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter') {
+                                  e.preventDefault();
+                                  const input = e.currentTarget;
+                                  if (input.value.trim()) {
+                                    const updatedFeatures = [...(editForm.features || []), input.value.trim()];
+                                    setEditForm({ ...editForm, features: updatedFeatures });
+                                    input.value = '';
+                                  }
+                                }
+                              }}
+                            />
+                            <button 
+                              type="button"
+                              onClick={() => {
+                                const input = document.getElementById('new-feature-input') as HTMLInputElement;
+                                if (input && input.value.trim()) {
+                                  const updatedFeatures = [...(editForm.features || []), input.value.trim()];
+                                  setEditForm({ ...editForm, features: updatedFeatures });
+                                  input.value = '';
+                                }
+                              }}
+                              className="px-4 py-2 bg-accent/20 hover:bg-accent/30 text-accent font-display font-bold text-xs rounded-lg transition-colors cursor-pointer"
+                            >
+                              Add Line
+                            </button>
+                          </div>
+                        </div>
+
                         <button onClick={savePricing} className="w-full py-2.5 rounded-lg bg-accent text-white font-display font-bold text-xs uppercase cursor-pointer flex items-center justify-center gap-1">
                           <Save className="w-3.5 h-3.5" /> Save Pricing Tier
                         </button>
@@ -895,26 +1155,89 @@ export default function AdminPanel({ isOpen, onClose, onDataRefresh }: AdminPane
 
             </div>
 
-            {/* Bottom status bar */}
-            <div className="p-4 border-t border-white/5 bg-[#030303] flex items-center justify-between text-[10px] font-mono text-muted">
-              <div className="flex items-center gap-1.5">
-                <Terminal className="w-3.5 h-3.5 text-accent animate-pulse" /> Live storage pipeline connected. Overwrites active instantly.
-              </div>
-              <AnimatePresence>
-                {saveStatus && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 5 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: 5 }}
-                    className="flex items-center gap-1 text-emerald-400 font-bold bg-emerald-500/10 px-2.5 py-1 rounded border border-emerald-500/20"
-                  >
-                    <Check className="w-3.5 h-3.5" /> {saveStatus}
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
+                {/* Bottom status bar */}
+                <div className="p-4 border-t border-white/5 bg-[#030303] flex items-center justify-between text-[10px] font-mono text-muted">
+                  <div className="flex items-center gap-1.5">
+                    <Terminal className="w-3.5 h-3.5 text-accent animate-pulse" /> Live storage pipeline connected. Overwrites active instantly.
+                  </div>
+                  <AnimatePresence>
+                    {saveStatus && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 5 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: 5 }}
+                        className="flex items-center gap-1 text-emerald-400 font-bold bg-emerald-500/10 px-2.5 py-1 rounded border border-emerald-500/20"
+                      >
+                        <Check className="w-3.5 h-3.5" /> {saveStatus}
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
 
-          </motion.div>
+                {/* Passcode Configuration Modal */}
+                {isPasscodeConfigOpen && (
+                  <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+                    <div className="w-full max-w-sm rounded-2xl bg-[#0f0f0f] border border-white/10 p-6 relative shadow-2xl">
+                      <button
+                        onClick={() => { setIsPasscodeConfigOpen(false); setPasscodeConfigError(null); }}
+                        className="absolute top-4 right-4 text-bebebe hover:text-white cursor-pointer"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+
+                      <div className="w-10 h-10 rounded-xl bg-accent/15 border border-accent/20 text-accent flex items-center justify-center mb-4">
+                        <Key className="w-5 h-5 animate-pulse" />
+                      </div>
+
+                      <h4 className="font-display font-black text-lg text-white mb-2">Configure Console Access Key</h4>
+                      <p className="text-[11px] text-bebebe leading-relaxed mb-4 font-sans">
+                        Update the security passcode required to unlock the internal database sheet console in this browser session.
+                      </p>
+
+                      <form onSubmit={handleChangePasscode} className="space-y-4 font-sans">
+                        <div>
+                          <label className="block text-[9px] uppercase font-mono text-muted mb-1.5">New Administrative Key</label>
+                          <input
+                            type="password"
+                            required
+                            value={newPasscode}
+                            onChange={(e) => setNewPasscode(e.target.value)}
+                            placeholder="••••••••••••"
+                            className="w-full px-3 py-2.5 rounded-lg bg-white/5 border border-white/5 text-white text-xs focus:outline-none focus:border-accent"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-[9px] uppercase font-mono text-muted mb-1.5">Confirm Key</label>
+                          <input
+                            type="password"
+                            required
+                            value={confirmNewPasscode}
+                            onChange={(e) => setConfirmNewPasscode(e.target.value)}
+                            placeholder="••••••••••••"
+                            className="w-full px-3 py-2.5 rounded-lg bg-white/5 border border-white/5 text-white text-xs focus:outline-none focus:border-accent"
+                          />
+                        </div>
+
+                        {passcodeConfigError && (
+                          <div className="p-2.5 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-[11px] font-mono text-center">
+                            ❌ {passcodeConfigError}
+                          </div>
+                        )}
+
+                        <button
+                          type="submit"
+                          className="w-full py-2.5 rounded-lg bg-accent hover:bg-accent-dark text-white font-display font-bold text-xs uppercase cursor-pointer transition-colors"
+                        >
+                          Update Access Passcode
+                        </button>
+                      </form>
+                    </div>
+                  </div>
+                )}
+              </>
+            )}
+
+            </motion.div>
         </div>
       )}
     </AnimatePresence>

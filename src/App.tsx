@@ -208,13 +208,6 @@ export default function App() {
       {/* Dynamic Lead Magnet Loader (triggers checklist download popup after 20 seconds) */}
       <LeadMagnetPopup />
 
-      {/* Database Admin Console Modal Overlay */}
-      <AdminPanel 
-        isOpen={adminOpen} 
-        onClose={() => setAdminOpen(false)} 
-        onDataRefresh={refreshDatabase}
-      />
-
       {/* 1. FLOATING NAVIGATION BAR */}
       <nav className="fixed top-0 left-0 right-0 z-50 transition-all duration-300 bg-[#020202]/70 backdrop-blur-md border-b border-white/5">
         <div className="max-w-7xl mx-auto px-6 md:px-12 h-20 flex items-center justify-between">
@@ -549,12 +542,85 @@ export default function App() {
         <div className="max-w-7xl mx-auto px-6 md:px-12">
           
           <div className="text-center max-w-2xl mx-auto mb-16">
-            <span className="text-accent font-mono text-xs uppercase tracking-widest block mb-3">// Dynamic Production Planner</span>
+            <span className="text-accent font-mono text-xs uppercase tracking-widest block mb-3">// Standard Studio Blueprints</span>
             <h2 className="font-display font-black text-3xl sm:text-4xl lg:text-5xl tracking-tight leading-[1.1] text-white">
-              Interactive Post Quote Planner
+              Sleek Creator Subscriptions
             </h2>
             <p className="font-sans text-bebebe text-sm sm:text-base leading-relaxed mt-4">
-              Calibrate your custom video budget instantly using our interactive budget slider widget. Request your contract with zero setup commitment.
+              Select an optimized retainer package calibrated for viral content velocity, or design a bespoke pipeline using our interactive custom planner below.
+            </p>
+          </div>
+
+          {/* DYNAMIC PRICING CARDS FROM DATABASE STATE */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-20">
+            {pricingPlans.map((plan, index) => {
+              const isPopular = plan.badge && plan.badge.toLowerCase().includes('popular');
+              return (
+                <div 
+                  key={plan.id || index}
+                  className={`relative p-8 rounded-2xl glass-card border flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 ${
+                    isPopular 
+                      ? 'border-accent shadow-[0_0_30px_rgba(255,122,0,0.15)] bg-gradient-to-b from-[#111] to-[#070707]' 
+                      : 'border-white/5 hover:border-white/15 bg-white/2'
+                  }`}
+                >
+                  {/* Badge */}
+                  {plan.badge && (
+                    <div className="absolute -top-3.5 left-6 px-3.5 py-1 rounded-full text-[9px] font-mono font-bold uppercase tracking-widest bg-accent text-white shadow-md">
+                      {plan.badge}
+                    </div>
+                  )}
+
+                  <div>
+                    <h3 className="font-display font-bold text-xl text-white mb-2">{plan.name}</h3>
+                    <p className="font-sans text-bebebe text-xs leading-relaxed mb-6 h-10 overflow-hidden line-clamp-2">
+                      {plan.description}
+                    </p>
+
+                    <div className="flex items-baseline gap-1 mb-8">
+                      <span className="font-display font-black text-4xl text-white tracking-tight">
+                        ${plan.price}
+                      </span>
+                      <span className="text-xs text-muted font-sans lowercase">
+                        /{plan.period || 'month'}
+                      </span>
+                    </div>
+
+                    <div className="border-t border-white/5 pt-6 mb-8">
+                      <ul className="space-y-3.5">
+                        {(plan.features || []).map((feature, fIdx) => (
+                          <li key={fIdx} className="flex items-start gap-2.5 text-xs text-bebebe font-sans">
+                            <Check className="w-4 h-4 text-accent shrink-0 mt-0.5" />
+                            <span>{feature}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
+
+                  <a 
+                    href="#book-call"
+                    className={`w-full py-3.5 rounded-xl text-xs font-display font-bold uppercase tracking-wider text-center block transition-all ${
+                      isPopular 
+                        ? 'bg-accent hover:bg-accent-dark text-white shadow-lg' 
+                        : 'bg-white/5 hover:bg-white/10 text-white border border-white/10 hover:border-white/20'
+                    }`}
+                  >
+                    Lock In This Plan
+                  </a>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Bespoke Quote Title */}
+          <div className="text-center max-w-2xl mx-auto mb-12 border-t border-white/5 pt-20">
+            <span className="text-accent font-mono text-xs uppercase tracking-widest block mb-3">// Design Custom Parameters</span>
+            <h3 className="font-display font-black text-2.5xl sm:text-3xl tracking-tight text-white">
+              Interactive Custom Budget Planner
+            </h3>
+            <p className="font-sans text-bebebe text-xs sm:text-sm mt-2">
+              Calibrate your custom video budget dynamically. Customize deliverables, motion tiers, turnaround speed, and custom add-ons instantly.
             </p>
           </div>
 
@@ -757,6 +823,13 @@ export default function App() {
 
       {/* 14. CONTACT BRIEF FORM */}
       <Contact />
+
+      {/* Database Admin Console - Positioned Inline at Bottom of Page Border */}
+      <AdminPanel 
+        isOpen={adminOpen} 
+        onClose={() => setAdminOpen(false)} 
+        onDataRefresh={refreshDatabase}
+      />
       </main>
 
       {/* 15. LUXURY FOOTER */}
