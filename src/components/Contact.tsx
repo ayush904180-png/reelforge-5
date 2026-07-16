@@ -32,47 +32,22 @@ export default function Contact() {
     setIsSubmitting(true);
 
     try {
-      const scriptURL = "https://script.google.com/macros/s/AKfycbwbBafnYT99UtpstpA7D76fhD4lE7Mye9AK4oEnrbtThFPGLCNuxH-mcS9x1HIH4nY9/exec";
+      await fetch(
+        "https://script.google.com/macros/s/AKfycbwbBafnYT99UtpstpA7D76fhD4lE7Mye9AK4oEnrbtThFPGLCNuxH-mcS9x1HIH4nY9/exec",
+        {
+          method: "POST",
+          redirect: "follow",
+          headers: {
+            "Content-Type": "text/plain;charset=utf-8",
+          },
+          body: JSON.stringify(formData),
+        }
+      );
 
-      const categoryLabels: Record<string, string> = {
-        youtube: 'YouTube Longform',
-        reels: 'TikTok / Reels / Shorts',
-        gaming: 'Gaming Highlight',
-        documentary: 'Cinematic Documentary',
-        commercial: 'Commercial Campaign',
-        corporate: 'Corporate Promo'
-      };
-
-      const payload = {
-        // camelCase format fields for API compatibility
-        name: formData.name,
-        email: formData.email,
-        channelType: formData.channelType,
-        footageUrl: formData.footageUrl,
-        message: formData.message,
-        // Google Sheet headers matched exactly to columns
-        "Name": formData.name,
-        "Email": formData.email,
-        "Deliverable Category": categoryLabels[formData.channelType] || formData.channelType,
-        "Footage URL": formData.footageUrl,
-        "Message": formData.message,
-        "Submission Date & Time": new Date().toLocaleString('en-US', { timeZoneName: 'short' }),
-      };
-
-      // Perform a robust, CORS-safe POST submission to the Google Apps Script endpoint
-      await fetch(scriptURL, {
-        method: "POST",
-        mode: "no-cors", // Crucial for preventing browser redirect CORS blockage from script.google.com
-        headers: {
-          "Content-Type": "text/plain;charset=utf-8",
-        },
-        body: JSON.stringify(payload),
-      });
-
-      // Show success animation state
+      // Show the existing custom success message only after the request succeeds
       setIsSuccess(true);
 
-      // Reset form variables upon successful submission
+      // Reset the form only after a successful submission
       setFormData({
         name: "",
         email: "",
@@ -81,8 +56,8 @@ export default function Contact() {
         message: "",
       });
     } catch (error) {
-      console.error("Submission error details:", error);
-      setErrorMessage("Failed to submit. Please check your network connection and try again.");
+      console.error(error);
+      setErrorMessage("Failed to submit form. Please check your network connection and try again.");
     } finally {
       setIsSubmitting(false);
     }
